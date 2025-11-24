@@ -41,7 +41,7 @@ val sampleBookingHistory = listOf(
     BookingHistoryItem("2", "Hair Coloring", "2025-01-15", "02:00 PM", "Upcoming"),
     BookingHistoryItem("3", "Nail Spa", "2025-01-20", "11:30 AM", "Cancelled"),
 )
-
+//testing
 // -------------------- BOOKING HISTORY + NAV BAR --------------------
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
