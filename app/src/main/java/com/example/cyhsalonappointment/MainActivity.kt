@@ -8,7 +8,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -16,9 +15,11 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cyhsalonappointment.screens.Account.AccountScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryScreen
+import com.example.cyhsalonappointment.screens.Login.LoginScreen
+import com.example.cyhsalonappointment.screens.Logo.LogoScreen
 import com.example.cyhsalonappointment.screens.ServiceDescription.ServiceDescriptionScreen
 import com.example.cyhsalonappointment.screens.ServiceMainScreen.ServicesMainScreen
-
+import com.example.cyhsalonappointment.screens.SignUp.SignUpScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -29,8 +30,19 @@ class MainActivity : ComponentActivity() {
 
             NavHost(
                 navController = navController,
-                startDestination = "services"
+                startDestination = "logo"
             ) {
+                composable("logo"){
+                    LogoScreen(navController)
+                }
+
+                composable("login"){
+                    LoginScreen(navController)
+                }
+
+                composable("sign_up"){
+                    SignUpScreen(navController)
+                }
 
                 composable("services") {
                     ServicesMainScreen(navController)
