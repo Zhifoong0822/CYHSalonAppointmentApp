@@ -106,7 +106,7 @@ fun ServiceDescriptionScreen(
             // Book Button
             Button(
                 onClick = {
-                    navController.navigate("booking")
+                    navController.navigate("booking/$serviceName")
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {

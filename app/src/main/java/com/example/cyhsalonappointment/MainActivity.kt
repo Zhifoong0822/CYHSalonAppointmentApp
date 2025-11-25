@@ -1,8 +1,10 @@
 package com.example.cyhsalonappointment
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -16,11 +18,14 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cyhsalonappointment.screens.Account.AccountScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryScreen
+import com.example.cyhsalonappointment.screens.Reschedule.RescheduleScreen
 import com.example.cyhsalonappointment.screens.ServiceDescription.ServiceDescriptionScreen
 import com.example.cyhsalonappointment.screens.ServiceMainScreen.ServicesMainScreen
+import com.example.cyhsalonappointmentscreens.BookingScreen.BookingScreen
 
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -37,7 +42,8 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("bookingHistory") {
-                    BookingHistoryScreen(navController)
+                    BookingHistoryScreen(navController, onRescheduleClick = {navController.navigate("reschedule/HairCut/2025-02-05/10:30 AM")}
+                    )
                 }
 
                 composable("account") {
@@ -64,6 +70,43 @@ class MainActivity : ComponentActivity() {
                         servicePrice = price
                     )
                 }
+                composable(
+                    route = "booking/{serviceName}",
+                    arguments = listOf(
+                        navArgument("serviceName") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+
+                    val name = backStackEntry.arguments?.getString("serviceName") ?: ""
+
+                    BookingScreen(
+                        navController = navController,
+                        serviceName = name
+                    )
+                }
+
+                composable(
+                    "reschedule/{name}/{date}/{time}",
+                    arguments = listOf(
+                        navArgument("name") { type = NavType.StringType },
+                        navArgument("date") { type = NavType.StringType },
+                        navArgument("time") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val name = backStackEntry.arguments?.getString("name") ?: ""
+                    val date = backStackEntry.arguments?.getString("date") ?: ""
+                    val time = backStackEntry.arguments?.getString("time") ?: ""
+
+                    RescheduleScreen(
+                        navController = navController,
+                        serviceName = name,
+                        oldDate = date,
+                        oldTime = time
+                    )
+                }
+
+
+
 
 
 
