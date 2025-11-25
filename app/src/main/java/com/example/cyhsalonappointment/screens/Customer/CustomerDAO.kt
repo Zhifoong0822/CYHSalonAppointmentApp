@@ -16,9 +16,16 @@ interface CustomerDAO {
     @Query("SELECT * FROM customers WHERE email = :email AND password = :password")
     suspend fun login(email: String, password: String): CustomerEntity?
 
+    // Get customer by Email
+    @Query("SELECT * FROM customers WHERE email = :email LIMIT 1")
+    suspend fun getCustomerByEmail(email: String): CustomerEntity?
+
     // Get customer by ID
     @Query("SELECT * FROM customers WHERE customerId = :id")
     suspend fun getCustomerById(id: String): CustomerEntity?
+
+    @Query("SELECT * FROM customers WHERE username = :username LIMIT 1")
+    suspend fun getCustomerByUsername(username: String): CustomerEntity?
 
     // Get all customers
     @Query("SELECT * FROM customers")

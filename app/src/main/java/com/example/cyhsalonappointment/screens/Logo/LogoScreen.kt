@@ -25,18 +25,16 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
 import com.example.cyhsalonappointment.R
-import com.example.cyhsalonappointment.screens.Login.LoginScreen
 
 @Composable
-fun LogoScreen(navController: NavHostController,
+fun LogoScreen(onLoginButtonClicked: () -> Unit = {},
+               onSignUpButtonClicked: () -> Unit = {},
                modifier: Modifier = Modifier){
 
     val scrollState = rememberScrollState()
@@ -124,7 +122,7 @@ fun LogoScreen(navController: NavHostController,
 
         //Login Button
         ElevatedButton(
-            onClick = { navController.navigate("login") },
+            onClick = onLoginButtonClicked,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(buttonHeight),
@@ -150,7 +148,7 @@ fun LogoScreen(navController: NavHostController,
 
         //Sign Up Button
         OutlinedButton(
-            onClick = { navController.navigate("sign_up")},
+            onClick = onSignUpButtonClicked,
             modifier = Modifier
                 .fillMaxWidth()
                 .height(buttonHeight),
