@@ -36,7 +36,7 @@ class MainActivity : ComponentActivity() {
 
             NavHost(
                 navController = navController,
-                startDestination = "services"
+                startDestination = "logo"
             ) {
                 composable("logo"){
                     LogoScreen(navController)
