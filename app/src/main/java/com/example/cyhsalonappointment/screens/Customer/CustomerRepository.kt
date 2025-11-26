@@ -38,4 +38,20 @@ class CustomerRepository(private val customerDao: CustomerDAO) {
     suspend fun isUsernameAvailable(username: String): Boolean {
         return customerDao.getCustomerByUsername(username) == null
     }
+
+    suspend fun loadCustomerProfile(email: String): CustomerEntity? {
+        return customerDao.getCustomerByEmail(email)
+    }
+
+    suspend fun updateCustomer(customer: CustomerEntity): Boolean {
+        return try {
+            customerDao.updateCustomer(customer) // make sure your DAO has an @Update function
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+    suspend fun deleteCustomer(userId: String) {
+        customerDao.deleteCustomer(userId)
+    }
 }

@@ -14,7 +14,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 
 @Composable
 fun BottomNavBar(navController: NavHostController) {
-    val items = listOf("services", "bookingHistory", "account")
+    val items = listOf("services", "bookingHistory", "profile")
 
     NavigationBar {
         items.forEach { screen ->
@@ -27,7 +27,7 @@ fun BottomNavBar(navController: NavHostController) {
                     when (screen) {
                         "services" -> Icon(Icons.Default.Home, "Services")
                         "bookingHistory" -> Icon(Icons.Default.DateRange, "Bookings")
-                        "account" -> Icon(Icons.Default.AccountCircle, "Account")
+                        "profile" -> Icon(Icons.Default.AccountCircle, "Account")
                     }
                 },
                 label = {

@@ -4,6 +4,7 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
+import androidx.room.Update
 
 @Dao
 interface CustomerDAO {
@@ -21,7 +22,7 @@ interface CustomerDAO {
     suspend fun getCustomerByEmail(email: String): CustomerEntity?
 
     // Get customer by ID
-    @Query("SELECT * FROM customers WHERE customerId = :id")
+    @Query("SELECT * FROM customers WHERE customerId = :id LIMIT 1")
     suspend fun getCustomerById(id: String): CustomerEntity?
 
     @Query("SELECT * FROM customers WHERE username = :username LIMIT 1")
@@ -30,4 +31,10 @@ interface CustomerDAO {
     // Get all customers
     @Query("SELECT * FROM customers")
     suspend fun getAllCustomers(): List<CustomerEntity>
+
+    @Update
+    suspend fun updateCustomer(customer: CustomerEntity)
+
+    @Query("DELETE FROM customers WHERE customerId = :id")
+    suspend fun deleteCustomer(id: String)
 }

@@ -66,5 +66,7 @@ dependencies {
     implementation("androidx.room:room-runtime:2.6.1")
     kapt("androidx.room:room-compiler:2.6.1")       // For annotation processing
     implementation("androidx.room:room-ktx:2.6.1")   // Kotlin extensions (suspend functions, coroutines)
+
+    implementation("androidx.datastore:datastore-preferences:1.1.0")
 }
 
