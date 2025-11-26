@@ -6,11 +6,16 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -18,16 +23,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.cyhsalonappointment.local.datastore.UserSessionManager
 import com.example.cyhsalonappointment.screens.Account.AccountScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryScreen
 import com.example.cyhsalonappointment.screens.Customer.CustomerDatabase
 import com.example.cyhsalonappointment.screens.Customer.CustomerRepository
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModelFactory
+import com.example.cyhsalonappointment.screens.EditProfile.EditProfileScreen
 import com.example.cyhsalonappointment.screens.ForgotPassword.ForgotPasswordScreen
 import com.example.cyhsalonappointment.screens.Reschedule.RescheduleScreen
 import com.example.cyhsalonappointment.screens.Login.LoginScreen
 import com.example.cyhsalonappointment.screens.Logo.LogoScreen
+import com.example.cyhsalonappointment.screens.Profile.ProfileScreen
 import com.example.cyhsalonappointment.screens.ServiceDescription.ServiceDescriptionScreen
 import com.example.cyhsalonappointment.screens.ServiceMainScreen.ServicesMainScreen
 import com.example.cyhsalonappointmentscreens.BookingScreen.BookingScreen
@@ -41,14 +49,11 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-
-            val context = this
-
-            val customerDao = CustomerDatabase.getDatabase(context).customerDao()
+            val customerDao = CustomerDatabase.getDatabase(this).customerDao()
             val repository = CustomerRepository(customerDao)
-            val customerViewModel: CustomerViewModel = viewModel(
-                factory = CustomerViewModelFactory(repository)
-            )
+            val session = UserSessionManager(this)
+            val customerViewModel: CustomerViewModel =
+                viewModel(factory = CustomerViewModelFactory(repository, session))
 
             NavHost(
                 navController = navController,
@@ -76,6 +81,35 @@ class MainActivity : ComponentActivity() {
                     ForgotPasswordScreen()
                 }
 
+                composable("profile") {
+                    val userEmail by session.getUserEmail().collectAsState(initial = "")
+                    if (userEmail.isNotEmpty()) {
+                        ProfileScreen(
+                            customerEmail = userEmail,
+                            viewModel = customerViewModel,
+                            onBackButtonClicked = { navController.popBackStack() },
+                            onEditProfileClicked = { navController.navigate("edit_profile") },
+                            onLogoutClicked = {
+                                navController.navigate("logo") {
+                                    popUpTo("services") { inclusive = true }
+                                }
+                            }
+                        )
+                    } else {
+                        // Show a simple loading spinner while userId is being loaded
+                        Box(
+                            modifier = Modifier.fillMaxSize(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            androidx.compose.material3.CircularProgressIndicator()
+                        }
+                    }
+                }
+
+                composable("edit_profile"){
+                    EditProfileScreen()
+                }
+
                 composable("services") {
                     ServicesMainScreen(navController)
                 }
@@ -83,10 +117,6 @@ class MainActivity : ComponentActivity() {
                 composable("bookingHistory") {
                     BookingHistoryScreen(navController, onRescheduleClick = {navController.navigate("reschedule/HairCut/2025-02-05/10:30 AM")}
                     )
-                }
-
-                composable("account") {
-                    AccountScreen(navController)
                 }
 
                 composable(

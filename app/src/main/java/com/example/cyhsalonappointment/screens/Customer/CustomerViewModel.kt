@@ -1,12 +1,16 @@
 package com.example.cyhsalonappointment.screens.Customer
 
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.cyhsalonappointment.local.datastore.UserSessionManager
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 
 data class LoginState(
     val email: String = "",
@@ -45,10 +49,21 @@ data class SignUpState(
 )
 
 data class UiState(
-    val userProfile: CustomerEntity? = null
+    val userProfile: CustomerEntity? = null,
+    val isLoggedIn: Boolean = false,
+    val isLoading: Boolean = false,
+    val isAuthChecking: Boolean = true,
+    val errorMessage: String? = null
 )
 
-class CustomerViewModel(private val repository: CustomerRepository) : ViewModel() {
+data class EditProfileState(
+    val successMessage: String? = null,
+    val errorMessage: String? = null
+)
+
+class CustomerViewModel(private val repository: CustomerRepository,
+                        private val dataStoreManager: UserSessionManager
+) : ViewModel() {
 
     private val _loginState = MutableStateFlow(LoginState())
     val loginState: StateFlow<LoginState> = _loginState
@@ -58,8 +73,14 @@ class CustomerViewModel(private val repository: CustomerRepository) : ViewModel(
     private val _signUpState = MutableStateFlow(SignUpState())
     val signUpState: StateFlow<SignUpState> = _signUpState
 
-    private val _uiState = MutableStateFlow(UiState())
+    private val _uiState = MutableStateFlow(UiState(isLoading = true))
     val uiState: StateFlow<UiState> = _uiState
+
+    private val _customerProfile = MutableStateFlow<CustomerEntity?>(null)
+    val customerProfile = _customerProfile
+
+    private val _editProfileState = MutableStateFlow(EditProfileState())
+    val editProfileState = _editProfileState.asStateFlow()
 
     // Logged-in user (optional)
     private val _loggedInCustomer = MutableStateFlow<CustomerEntity?>(null)
@@ -94,6 +115,10 @@ class CustomerViewModel(private val repository: CustomerRepository) : ViewModel(
                 // Login succeeded
                 _loggedInCustomer.value = customer
                 _uiState.value = UiState(userProfile = customer)
+
+                launch { dataStoreManager.saveUserEmail(customer.email) }
+                launch { dataStoreManager.saveLoginStatus(true) }
+                launch { dataStoreManager.saveUserId(customer.customerId) }
 
                 _loginState.value = _loginState.value.copy(
                     isLoading = false,
@@ -130,6 +155,7 @@ class CustomerViewModel(private val repository: CustomerRepository) : ViewModel(
                 is AuthResult.Success -> {
                     _registrationResult.value = true
                     _loggedInCustomer.value = result.data
+                    dataStoreManager.saveUserEmail(result.data.email)
                     _signUpState.value = _signUpState.value.copy(
                         isLoading = false,
                         successMessage = "Sign up successful!"
@@ -162,7 +188,7 @@ class CustomerViewModel(private val repository: CustomerRepository) : ViewModel(
             errorMessage = null
         )
 
-        if (username.length >= 3) {
+        if (username.length >= 2) {
             usernameCheckJob?.cancel()
             usernameCheckJob = viewModelScope.launch {
                 delay(500) // debounce
@@ -239,9 +265,111 @@ class CustomerViewModel(private val repository: CustomerRepository) : ViewModel(
         )
     }
 
+    fun loadLocalUserProfile(email: String) {
+        viewModelScope.launch {
+            Log.d("ProfileScreen", "Loading profile for ID: $email")
+
+            val localUser = repository.loadCustomerProfile(email)
+
+            Log.d("ProfileScreen", "User loaded: $localUser")
+
+            if (localUser != null) {
+                // Save session info in DataStore
+                dataStoreManager.saveLoginStatus(true)
+                dataStoreManager.saveUserId(localUser.customerId)
+
+                _uiState.value = _uiState.value.copy(
+                    userProfile = localUser, // directly use CustomerEntity
+                    isLoggedIn = true,
+                    isLoading = false,
+                    isAuthChecking = false
+                )
+            } else {
+                _uiState.value = _uiState.value.copy(
+                    isLoading = false,
+                    isAuthChecking = false,
+                    errorMessage = "No local profile found"
+                )
+            }
+        }
+    }
+
+    fun updateProfile(updatedCustomer: CustomerEntity) {
+        viewModelScope.launch {
+            val success = repository.updateCustomer(updatedCustomer)
+            if (success) {
+                // Update UI state
+                _uiState.value = _uiState.value.copy(
+                    userProfile = updatedCustomer,
+                    errorMessage = null
+                )
+                // Set success message for Snackbar
+                _editProfileState.value = _editProfileState.value.copy(
+                    successMessage = "Profile updated successfully"
+                )
+            } else {
+                _editProfileState.value = _editProfileState.value.copy(
+                    errorMessage = "Failed to update profile"
+                )
+            }
+        }
+    }
+
+    // Clear success/error messages after showing Snackbar
+    fun clearEditProfileSuccessMessage() {
+        _editProfileState.value = _editProfileState.value.copy(successMessage = null)
+    }
+
+    fun clearEditProfileErrorMessage() {
+        _editProfileState.value = _editProfileState.value.copy(errorMessage = null)
+    }
+
+    // Optional: reset form
+    fun clearEditProfileForm() {
+        _editProfileState.value = EditProfileState()
+    }
+
+    fun deleteAccount(userId: String, email: String, password: String) {
+        viewModelScope.launch {
+            try {
+                // Validate user
+                val user = repository.loginCustomer(email, password)
+
+                if (user == null || user.customerId != userId) {
+                    _uiState.value = _uiState.value.copy(
+                        errorMessage = "Incorrect password. Unable to delete account."
+                    )
+                    return@launch
+                }
+
+                // Delete account
+                repository.deleteCustomer(userId)
+
+                // Clear ViewModel logout state
+                _loggedInCustomer.value = null
+                _uiState.value = UiState(
+                    userProfile = null,
+                    isLoggedIn = false,
+                    errorMessage = null
+                )
+
+            } catch (e: Exception) {
+                _uiState.value = _uiState.value.copy(
+                    errorMessage = "Error deleting account."
+                )
+            }
+        }
+    }
+
     // LOG OUT
     fun logout() {
-        _loggedInCustomer.value = null
+        viewModelScope.launch {
+            dataStoreManager.clearSession()   // Clears userId + login status
+            _loggedInCustomer.value = null
+            _uiState.value = UiState()
+            clearLoginForm()
+            clearSignUpForm()
+        }
     }
 
     fun clearLoginForm() {
@@ -269,5 +397,9 @@ class CustomerViewModel(private val repository: CustomerRepository) : ViewModel(
             successMessage = null,
             errorMessage = null
         )
+    }
+
+    suspend fun getStoredUserId(): String? {
+        return dataStoreManager.getUserId().first()
     }
 }
