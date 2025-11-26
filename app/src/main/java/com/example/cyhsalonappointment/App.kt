@@ -39,19 +39,23 @@ class App : Application() {
         val slots = mutableListOf<TimeSlot>()
         var hour = 10
         var minute = 0
+        var counter = 1
 
         while (hour < 18 || (hour == 18 && minute == 0)) {
             val time = String.format("%02d:%02d", hour, minute)
-            slots.add(TimeSlot(timeSlot = time))
+            val id = "TS%04d".format(counter)   // TS0001, TS0002, etc.
+            slots.add(TimeSlot(timeSlotId = id, timeSlot = time))
 
             minute += 30
             if (minute == 60) {
                 minute = 0
                 hour++
             }
+            counter++
         }
 
         return slots
     }
+
 
 }
