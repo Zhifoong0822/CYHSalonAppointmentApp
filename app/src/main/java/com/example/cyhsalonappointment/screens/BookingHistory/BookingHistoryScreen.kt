@@ -1,5 +1,7 @@
 package com.example.cyhsalonappointment.screens.BookingHistory
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,7 +16,9 @@ import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -25,36 +29,36 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.cyhsalonappointment.BottomNavBar
 
-//test githubbb
 // -------------------- SAMPLE DATA MODEL --------------------
-data class BookingHistoryItem(
-    val id: String,
-    val serviceName: String,
+data class AppointmentDisplay(
+    val appointmentId: String,
     val date: String,
-    val time: String,
+    val timeSlotId: String,
     val status: String
 )
 
-// -------------------- SAMPLE LIST --------------------
-val sampleBookingHistory = listOf(
-    BookingHistoryItem("1", "Haircut", "2025-01-12", "10:00 AM", "Completed"),
-    BookingHistoryItem("2", "Hair Coloring", "2025-01-15", "02:00 PM", "Upcoming"),
-    BookingHistoryItem("3", "Nail Spa", "2025-01-20", "11:30 AM", "Cancelled"),
-)
-//testing
-// -------------------- BOOKING HISTORY + NAV BAR --------------------
+
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BookingHistoryScreen(
     navController: NavHostController,
-    onRescheduleClick: (BookingHistoryItem) -> Unit = {},
-    onCancelClick: (BookingHistoryItem) -> Unit = {}
+    viewModel: BookingHistoryViewModel,
+    onRescheduleClick: (AppointmentDisplay) -> Unit = {},
+    onCancelClick: (AppointmentDisplay) -> Unit = {}
 ) {
+    // Observe LiveData as State
+    val appointments by viewModel.appointments.observeAsState(emptyList())
+
+    // Load appointments when screen opens
+    LaunchedEffect(Unit) {
+        viewModel.loadAppointments()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("My Booking History") }
-                ,
+                title = { Text("My Booking History") },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
@@ -62,18 +66,16 @@ fun BookingHistoryScreen(
                 }
             )
         },
-        bottomBar = {
-            BottomNavBar(navController)
-        }
+        bottomBar = { BottomNavBar(navController) }
     ) { padding ->
         LazyColumn(
             modifier = Modifier
                 .padding(padding)
                 .padding(16.dp)
         ) {
-            items(sampleBookingHistory) { item ->
+            items(appointments) { appt ->
                 HistoryCard(
-                    booking = item,
+                    appointment = appt,
                     onRescheduleClick = onRescheduleClick,
                     onCancelClick = onCancelClick
                 )
@@ -83,36 +85,40 @@ fun BookingHistoryScreen(
     }
 }
 
+
 // -------------------- CARD UI --------------------
 @Composable
 fun HistoryCard(
-    booking: BookingHistoryItem,
-    onRescheduleClick: (BookingHistoryItem) -> Unit,
-    onCancelClick: (BookingHistoryItem) -> Unit
+    appointment: AppointmentDisplay,
+    onRescheduleClick: (AppointmentDisplay) -> Unit,
+    onCancelClick: (AppointmentDisplay) -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
-        modifier = Modifier.fillMaxWidth().border(width = 1.dp, color = Color.Gray, shape = RoundedCornerShape(12.dp)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .border(1.dp, Color.Gray, RoundedCornerShape(12.dp)),
         colors = CardDefaults.cardColors(containerColor = Color(0xFFF8F8F8))
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
+
             Text(
-                text = booking.serviceName,
+                text = "Appointment ID: ${appointment.appointmentId}",
                 fontSize = 18.sp,
                 fontWeight = FontWeight.Bold
             )
 
             Spacer(modifier = Modifier.height(6.dp))
 
-            Text("Date: ${booking.date}", fontSize = 14.sp)
-            Text("Time: ${booking.time}", fontSize = 14.sp)
+            Text("Date: ${appointment.date}", fontSize = 14.sp)
+            Text("Time Slot: ${appointment.timeSlotId}", fontSize = 14.sp)
 
             Spacer(modifier = Modifier.height(10.dp))
 
-            val statusColor = when (booking.status) {
+            val statusColor = when (appointment.status) {
                 "Completed" -> Color(0xFF4CAF50)
+                "Today" -> Color(0xFFFF9800)
                 "Upcoming" -> Color(0xFF2196F3)
-                "Cancelled" -> Color(0xFFF44336)
                 else -> Color.Gray
             }
 
@@ -122,7 +128,7 @@ fun HistoryCard(
                     .padding(vertical = 4.dp, horizontal = 10.dp)
             ) {
                 Text(
-                    text = booking.status,
+                    text = appointment.status,
                     color = statusColor,
                     fontWeight = FontWeight.Medium,
                     fontSize = 13.sp
@@ -131,16 +137,16 @@ fun HistoryCard(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            if (booking.status == "Upcoming") {
+            if (appointment.status == "Upcoming") {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
-                    TextButton(onClick = { onCancelClick(booking) }) {
+                    TextButton(onClick = { onCancelClick(appointment) }) {
                         Text("Cancel")
                     }
                     Spacer(modifier = Modifier.width(6.dp))
-                    Button(onClick = { onRescheduleClick(booking) }) {
+                    Button(onClick = { onRescheduleClick(appointment) }) {
                         Text("Reschedule")
                     }
                 }

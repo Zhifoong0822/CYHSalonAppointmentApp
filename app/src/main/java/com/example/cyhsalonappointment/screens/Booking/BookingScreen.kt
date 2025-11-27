@@ -38,10 +38,11 @@ fun BookingScreen(
     var selectedTimeSlot by remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val dao = App.db.timeSlotDao()
+    val timeSlotDao = App.db.timeSlotDao()
+    val appointmentDao = App.db.appointmentDao()
 
     val viewModel: BookingViewModel = viewModel(
-        factory = BookingViewModelFactory(dao)
+        factory = BookingViewModelFactory(timeSlotDao, appointmentDao)
     )
 
     // Collect timeslots from DB
@@ -89,7 +90,13 @@ fun BookingScreen(
 
             // Payment Button
             Button(
-                onClick = { navController.navigate("payment") },
+                onClick = {  viewModel.createAppointment(
+                    date = selectedDate.toString(),
+                    timeSlotId = selectedTimeSlot,
+                    customerId = "C0001",   // later load from login
+                    serviceId = "SV0001"    // pass service ID
+                )
+                },
                 enabled = selectedTimeSlot.isNotEmpty(),
                 modifier = Modifier.fillMaxWidth()
             ) {

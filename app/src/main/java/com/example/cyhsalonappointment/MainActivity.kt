@@ -26,6 +26,8 @@ import androidx.navigation.navArgument
 import com.example.cyhsalonappointment.local.datastore.UserSessionManager
 import com.example.cyhsalonappointment.screens.Account.AccountScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryScreen
+import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryViewModel
+import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryViewModelFactory
 import com.example.cyhsalonappointment.screens.Customer.CustomerDatabase
 import com.example.cyhsalonappointment.screens.Customer.CustomerRepository
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
@@ -115,9 +117,20 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("bookingHistory") {
-                    BookingHistoryScreen(navController, onRescheduleClick = {navController.navigate("reschedule/HairCut/2025-02-05/10:30 AM")}
+                    val dao = App.db.appointmentDao()
+                    val bhVM: BookingHistoryViewModel = viewModel(
+                        factory = BookingHistoryViewModelFactory(dao)
+                    )
+
+                    BookingHistoryScreen(
+                        navController = navController,
+                        viewModel = bhVM,
+                        onRescheduleClick = { appt ->
+                            navController.navigate("reschedule/ServiceName/${appt.date}/${appt.timeSlotId}")
+                        }
                     )
                 }
+
 
                 composable(
                     route = "serviceDetail/{name}/{desc}/{price}",
