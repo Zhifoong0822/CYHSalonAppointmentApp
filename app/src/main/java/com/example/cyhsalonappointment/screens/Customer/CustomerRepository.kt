@@ -7,16 +7,10 @@ class CustomerRepository(private val customerDao: CustomerDAO) {
     // SIGNUP
     suspend fun signUp(customer: CustomerEntity): AuthResult<CustomerEntity> {
         return try {
-            Log.d("Repo", "Inserting customer: $customer")
-            val existing = customerDao.getCustomerByEmail(customer.email)
-            if (existing != null) return AuthResult.Error(Exception("Email already in use"))
-
             customerDao.insertCustomer(customer)
-            Log.d("Repo", "Inserted successfully")
             AuthResult.Success(customer)
         } catch (e: Exception) {
-            Log.e("Repo", "Signup failed", e)
-            AuthResult.Error(Exception("Signup failed: ${e.message}"))
+            AuthResult.Error(e)
         }
     }
 
@@ -35,6 +29,10 @@ class CustomerRepository(private val customerDao: CustomerDAO) {
         return customerDao.getCustomerById(id)
     }
 
+    suspend fun getAllCustomerIds(): List<String> {
+        return customerDao.getAllCustomerIds()
+    }
+
     suspend fun isUsernameAvailable(username: String): Boolean {
         return customerDao.getCustomerByUsername(username) == null
     }
@@ -43,14 +41,22 @@ class CustomerRepository(private val customerDao: CustomerDAO) {
         return customerDao.getCustomerByEmail(email)
     }
 
-    suspend fun updateCustomer(customer: CustomerEntity): Boolean {
-        return try {
-            customerDao.updateCustomer(customer) // make sure your DAO has an @Update function
-            true
-        } catch (e: Exception) {
-            false
-        }
+    suspend fun updateCustomerProfile(
+        customerId: String,
+        username: String,
+        gender: String,
+        email: String,
+        contactNumber: String
+    ) {
+        customerDao.updateCustomerInfo(
+            customerId = customerId,
+            username = username,
+            gender = gender,
+            email = email,
+            contactNumber = contactNumber
+        )
     }
+
     suspend fun deleteCustomer(userId: String) {
         customerDao.deleteCustomer(userId)
     }

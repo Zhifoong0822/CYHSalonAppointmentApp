@@ -57,8 +57,24 @@ data class UiState(
 )
 
 data class EditProfileState(
-    val successMessage: String? = null,
-    val errorMessage: String? = null
+    val newUsername: String = "",
+    val newGender: String = "",
+    val newEmail: String = "",
+    val newContactNumber: String = "",
+
+    val isLoading: Boolean = false,
+    val errorMessage: String? = null,
+    val successMessage: String? = null
+)
+
+data class UserProfile(
+    val customerId: String,
+    val username: String,
+    val gender: String,
+    val email: String,
+    val contactNumber: String,
+    val createdAt: Long,
+    val updatedAt: Long
 )
 
 class CustomerViewModel(private val repository: CustomerRepository,
@@ -142,32 +158,57 @@ class CustomerViewModel(private val repository: CustomerRepository,
     // SIGNUP
     fun sign_up(customer: CustomerEntity) {
         viewModelScope.launch {
-            // set loading true
             _signUpState.value = _signUpState.value.copy(
                 isLoading = true,
                 errorMessage = null,
                 successMessage = null
             )
 
-            val result = repository.signUp(customer)
+            try {
+                // Step 1: Get existing IDs
+                val existingIds = repository.getAllCustomerIds()
+                val newId = generateCustomerId(existingIds)
 
-            when (result) {
-                is AuthResult.Success -> {
-                    _registrationResult.value = true
-                    _loggedInCustomer.value = result.data
-                    dataStoreManager.saveUserEmail(result.data.email)
-                    _signUpState.value = _signUpState.value.copy(
-                        isLoading = false,
-                        successMessage = "Sign up successful!"
-                    )
+                // Step 2: Build new CustomerEntity
+                val newCustomer = CustomerEntity(
+                    customerId = newId,
+                    username = signUpState.value.username.trim(),
+                    email = signUpState.value.email.trim(),
+                    password = signUpState.value.password,
+                    gender = signUpState.value.gender,
+                    contactNumber = signUpState.value.contactNumber,
+                    createdAt = System.currentTimeMillis(),
+                    updatedAt = System.currentTimeMillis()
+                )
+
+                // Step 3: Insert customer through repository
+                val result = repository.signUp(newCustomer)
+
+                // Step 4: Handle result
+                when (result) {
+                    is AuthResult.Success -> {
+                        _registrationResult.value = true
+                        _loggedInCustomer.value = result.data
+                        dataStoreManager.saveUserEmail(result.data.email)
+                        _signUpState.value = _signUpState.value.copy(
+                            isLoading = false,
+                            successMessage = "Sign up successful!"
+                        )
+                    }
+                    is AuthResult.Error -> {
+                        _registrationResult.value = false
+                        _signUpState.value = _signUpState.value.copy(
+                            isLoading = false,
+                            errorMessage = result.exception.message
+                        )
+                    }
                 }
-                is AuthResult.Error -> {
-                    _registrationResult.value = false
-                    _signUpState.value = _signUpState.value.copy(
-                        isLoading = false,
-                        errorMessage = result.exception.message
-                    )
-                }
+
+            } catch (e: Exception) {
+                _signUpState.value = _signUpState.value.copy(
+                    isLoading = false,
+                    errorMessage = e.message ?: "Error during signup"
+                )
             }
         }
     }
@@ -197,6 +238,17 @@ class CustomerViewModel(private val repository: CustomerRepository,
         }
     }
 
+    fun generateCustomerId(existingIds: List<String>): String {
+        if (existingIds.isEmpty()) return "C0001" // first customer
+
+        val maxNumber = existingIds
+            .map { it.removePrefix("C").toIntOrNull() ?: 0 } // remove "C" and convert
+            .maxOrNull() ?: 0
+
+        val nextNumber = maxNumber + 1
+        return "C" + nextNumber.toString().padStart(4, '0')
+    }
+
     private fun checkUsernameAvailability(username: String) {
         viewModelScope.launch {
             try {
@@ -220,13 +272,6 @@ class CustomerViewModel(private val repository: CustomerRepository,
 
     fun setConfirmPasswordError(message: String?) {
         _signUpState.value = _signUpState.value.copy(confirmPasswordError = message)
-    }
-
-    fun onSignUpBirthdateChange(birthdate: String) {
-        _signUpState.value = _signUpState.value.copy(
-            birthdate = birthdate,
-            errorMessage = null
-        )
     }
 
     fun onSignUpGenderChange(gender: String) {
@@ -294,25 +339,61 @@ class CustomerViewModel(private val repository: CustomerRepository,
         }
     }
 
-    fun updateProfile(updatedCustomer: CustomerEntity) {
+    fun updateUserProfile(updated: UserProfile) {
         viewModelScope.launch {
-            val success = repository.updateCustomer(updatedCustomer)
-            if (success) {
-                // Update UI state
+            _editProfileState.value = _editProfileState.value.copy(
+                isLoading = true,
+                errorMessage = null,
+                successMessage = null
+            )
+
+            try {
+                repository.updateCustomerProfile(
+                    customerId = updated.customerId,
+                    username = updated.username,
+                    gender = updated.gender,
+                    email = updated.email,
+                    contactNumber = updated.contactNumber
+                )
+
+                // update UI (refresh profile)
                 _uiState.value = _uiState.value.copy(
-                    userProfile = updatedCustomer,
-                    errorMessage = null
+                    userProfile = CustomerEntity(
+                        customerId = updated.customerId,
+                        username = updated.username,
+                        gender = updated.gender,
+                        email = updated.email,
+                        contactNumber = updated.contactNumber,
+                        password = _uiState.value.userProfile?.password ?: "", // keep old password
+                        createdAt = updated.createdAt,
+                        updatedAt = updated.updatedAt
+                    )
                 )
-                // Set success message for Snackbar
+
                 _editProfileState.value = _editProfileState.value.copy(
-                    successMessage = "Profile updated successfully"
+                    isLoading = false,
+                    successMessage = "Profile updated"
                 )
-            } else {
+
+            } catch (e: Exception) {
                 _editProfileState.value = _editProfileState.value.copy(
-                    errorMessage = "Failed to update profile"
+                    isLoading = false,
+                    errorMessage = e.message
                 )
             }
         }
+    }
+
+    fun updateNewUsername(value: String) {
+        _editProfileState.value = _editProfileState.value.copy(newUsername = value)
+    }
+
+    fun updateNewGender(value: String) {
+        _editProfileState.value = _editProfileState.value.copy(newGender = value)
+    }
+
+    fun updateNewContactNumber(value: String) {
+        _editProfileState.value = _editProfileState.value.copy(newContactNumber = value)
     }
 
     // Clear success/error messages after showing Snackbar
