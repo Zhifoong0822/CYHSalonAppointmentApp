@@ -107,7 +107,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("edit_profile"){
-                    EditProfileScreen()
+                    EditProfileScreen(viewModel = customerViewModel,
+                        onBackButtonClicked = { navController.popBackStack() },
+                        onSaveSuccess = { navController.popBackStack() })
                 }
 
                 composable("services") {

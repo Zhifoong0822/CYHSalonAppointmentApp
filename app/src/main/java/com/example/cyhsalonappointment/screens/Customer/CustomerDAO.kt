@@ -32,8 +32,29 @@ interface CustomerDAO {
     @Query("SELECT * FROM customers")
     suspend fun getAllCustomers(): List<CustomerEntity>
 
+    @Query("SELECT customerId FROM customers")
+    suspend fun getAllCustomerIds(): List<String>
+
     @Update
     suspend fun updateCustomer(customer: CustomerEntity)
+
+    @Query("""
+    UPDATE customers 
+    SET username = :username,
+        gender = :gender,
+        email = :email,
+        contactNumber = :contactNumber,
+        updatedAt = :updatedAt
+    WHERE customerId = :customerId
+""")
+    suspend fun updateCustomerInfo(
+        customerId: String,
+        username: String,
+        gender: String,
+        email: String,
+        contactNumber: String,
+        updatedAt: Long = System.currentTimeMillis()
+    )
 
     @Query("DELETE FROM customers WHERE customerId = :id")
     suspend fun deleteCustomer(id: String)
