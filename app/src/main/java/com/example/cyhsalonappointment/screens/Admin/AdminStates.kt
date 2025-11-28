@@ -1,10 +1,10 @@
-package com.example.cyhsalonappointment.screens.Staff
+package com.example.cyhsalonappointment.screens.Admin
 
-//Staff Login state
-data class StaffLoginState(
-    val staffId: String = "",
+//Admin Login state
+data class AdminLoginState(
+    val adminId: String = "",
     val password: String = "",
-    val staff: StaffEntity? = null,
+    val admin: AdminEntity? = null,
     val isLoggedIn: Boolean = false,
     val isLoading: Boolean = false,
     val errorMessage: String? = null,

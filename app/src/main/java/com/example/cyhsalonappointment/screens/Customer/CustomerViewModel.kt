@@ -77,6 +77,12 @@ data class UserProfile(
     val updatedAt: Long
 )
 
+data class ResetPasswordState(
+    val isLoading: Boolean = false,
+    val successMessage: String? = null,
+    val errorMessage: String? = null
+)
+
 class CustomerViewModel(private val repository: CustomerRepository,
                         private val dataStoreManager: UserSessionManager
 ) : ViewModel() {
@@ -97,6 +103,9 @@ class CustomerViewModel(private val repository: CustomerRepository,
 
     private val _editProfileState = MutableStateFlow(EditProfileState())
     val editProfileState = _editProfileState.asStateFlow()
+
+    private val _resetPasswordState = MutableStateFlow(ResetPasswordState())
+    val resetPasswordState = _resetPasswordState
 
     // Logged-in user (optional)
     private val _loggedInCustomer = MutableStateFlow<CustomerEntity?>(null)
@@ -396,6 +405,30 @@ class CustomerViewModel(private val repository: CustomerRepository,
         _editProfileState.value = _editProfileState.value.copy(newContactNumber = value)
     }
 
+    fun resetPassword(email: String) {
+        viewModelScope.launch {
+            _resetPasswordState.value = ResetPasswordState(isLoading = true)
+
+            val customer = repository.getCustomerByEmail(email)
+
+            if (customer == null) {
+                _resetPasswordState.value = ResetPasswordState(
+                    isLoading = false,
+                    errorMessage = "Email not found."
+                )
+                return@launch
+            }
+
+            // Simulate sending an email
+            delay(1500)
+
+            _resetPasswordState.value = ResetPasswordState(
+                isLoading = false,
+                successMessage = "Password reset link has been sent to your email."
+            )
+        }
+    }
+
     // Clear success/error messages after showing Snackbar
     fun clearEditProfileSuccessMessage() {
         _editProfileState.value = _editProfileState.value.copy(successMessage = null)
@@ -408,6 +441,10 @@ class CustomerViewModel(private val repository: CustomerRepository,
     // Optional: reset form
     fun clearEditProfileForm() {
         _editProfileState.value = EditProfileState()
+    }
+
+    fun clearResetPasswordMessages() {
+        _resetPasswordState.value = ResetPasswordState()
     }
 
     fun deleteAccount(userId: String, email: String, password: String) {

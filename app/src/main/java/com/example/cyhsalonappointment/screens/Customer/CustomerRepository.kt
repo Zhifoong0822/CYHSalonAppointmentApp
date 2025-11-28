@@ -29,6 +29,10 @@ class CustomerRepository(private val customerDao: CustomerDAO) {
         return customerDao.getCustomerById(id)
     }
 
+    suspend fun getCustomerByEmail(email: String): CustomerEntity? {
+        return customerDao.getCustomerByEmail(email)
+    }
+
     suspend fun getAllCustomerIds(): List<String> {
         return customerDao.getAllCustomerIds()
     }
