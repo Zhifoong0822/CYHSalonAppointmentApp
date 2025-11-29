@@ -189,7 +189,7 @@ fun LogoScreen(onLoginButtonClicked: () -> Unit = {},
                     .align(Alignment.TopEnd) // now aligned to top-right of Box
                     .padding(16.dp)
                     .size(36.dp)
-                    .clickable { onStaffLoginButtonClicked() }
+                    .clickable { onAdminLoginButtonClicked() }
             )
     }
 }

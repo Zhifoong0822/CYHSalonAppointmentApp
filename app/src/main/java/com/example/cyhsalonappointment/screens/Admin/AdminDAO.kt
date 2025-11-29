@@ -7,6 +7,6 @@ import androidx.room.Query
 interface AdminDAO {
 
     // Login only (validate staffId + password)
-    @Query("SELECT * FROM admin WHERE adminId = :id AND password = :password")
+    @Query("SELECT * FROM admin WHERE adminId = :adminId AND password = :password")
     suspend fun login(adminId: String, password: String): AdminEntity?
 }
