@@ -7,6 +7,7 @@ data class AdminLoginState(
     val admin: AdminEntity? = null,
     val isLoggedIn: Boolean = false,
     val isLoading: Boolean = false,
+    val isSuccess: Boolean = false,
     val errorMessage: String? = null,
     val successMessage: String? = null
 )

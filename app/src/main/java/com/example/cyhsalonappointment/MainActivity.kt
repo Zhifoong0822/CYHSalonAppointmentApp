@@ -17,12 +17,15 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.cyhsalonappointment.local.AppDatabase
 import com.example.cyhsalonappointment.local.datastore.UserSessionManager
+import com.example.cyhsalonappointment.screens.Admin.AdminRepository
+import com.example.cyhsalonappointment.screens.Admin.AdminViewModel
+import com.example.cyhsalonappointment.screens.Admin.AdminViewModelFactory
 import com.example.cyhsalonappointment.screens.AdminLogin.AdminLoginScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryViewModel
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryViewModelFactory
-import com.example.cyhsalonappointment.screens.Customer.CustomerDatabase
 import com.example.cyhsalonappointment.screens.Customer.CustomerRepository
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModelFactory
@@ -45,11 +48,16 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val navController = rememberNavController()
-            val customerDao = CustomerDatabase.getDatabase(this).customerDao()
+            val customerDao = AppDatabase.getDatabase(this).customerDao()
+            val adminDao = AppDatabase.getDatabase(this).adminDao()
             val repository = CustomerRepository(customerDao)
+            val adminRepo = AdminRepository(adminDao)
             val session = UserSessionManager(this)
             val customerViewModel: CustomerViewModel =
                 viewModel(factory = CustomerViewModelFactory(repository, session))
+            val adminViewModel: AdminViewModel = viewModel(
+                factory = AdminViewModelFactory(adminRepo)
+            )
 
             NavHost(
                 navController = navController,
@@ -75,7 +83,9 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("admin_login"){
-                    AdminLoginScreen()
+                    AdminLoginScreen(viewModel = adminViewModel,
+                        onBackButtonClicked = { navController.popBackStack() },
+                        onSuccess = { navController.navigate("services") })  //navigate to ys staff
                 }
 
                 composable("forgot_password"){

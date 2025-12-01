@@ -10,4 +10,8 @@ class AdminRepository(private val adminDao: AdminDAO) {
     suspend fun getAdmin(adminId: String, password: String): AdminEntity? {
         return adminDao.login(adminId, password)
     }
+
+    suspend fun login(adminId: String, password: String): AdminEntity? {
+        return adminDao.login(adminId, password)
+    }
 }

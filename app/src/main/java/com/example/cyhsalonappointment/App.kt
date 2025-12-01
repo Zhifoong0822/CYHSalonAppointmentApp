@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.room.Room
 import com.example.cyhsalonappointment.local.AppDatabase
 import com.example.cyhsalonappointment.local.entity.TimeSlot
+import com.example.cyhsalonappointment.screens.Admin.AdminEntity
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -24,6 +25,7 @@ class App : Application() {
         ).build()
 
         GlobalScope.launch {
+            insertDefaultAdmin()
             val dao = db.timeSlotDao()
 
             // Check if empty
@@ -57,5 +59,20 @@ class App : Application() {
         return slots
     }
 
+    private suspend fun insertDefaultAdmin() {
+        val adminDao = db.adminDao()
+
+        // If table is empty, insert one default admin
+        if (adminDao.getAllAdmins().isEmpty()) {
+
+            val defaultAdmin = AdminEntity(
+                adminId = "A0001",
+                password = "admin123",
+                name = "CYH"
+            )
+
+            adminDao.insertAdmin(defaultAdmin)
+        }
+    }
 
 }
