@@ -17,11 +17,8 @@ import com.example.cyhsalonappointment.local.entity.Stylist
 
 
 @Database(
-    entities = [TimeSlot::class, Appointment::class, Stylist::class],
+    entities = [TimeSlot::class, Appointment::class, Stylist::class, CustomerEntity::class, AdminEntity::class],
     version = 2,
-    exportSchema = false
-    entities = [TimeSlot::class, Appointment::class, CustomerEntity::class, AdminEntity::class],
-    version = 1,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
