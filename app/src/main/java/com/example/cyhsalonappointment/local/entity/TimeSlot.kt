@@ -9,3 +9,5 @@ data class TimeSlot(
     val timeSlotId: String,   // e.g., "TS0001"
     val timeSlot: String      // e.g., "10:00"
 )
+
+

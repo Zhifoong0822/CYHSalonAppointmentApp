@@ -1,24 +1,23 @@
 package com.example.cyhsalonappointment.screens.Reschedule
 
-import android.app.DatePickerDialog
-import android.content.Context
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import com.example.cyhsalonappointment.App
+import com.example.cyhsalonappointment.local.entity.TimeSlot
 import com.example.cyhsalonappointmentscreens.BookingScreen.DatePickerField
 import com.example.cyhsalonappointmentscreens.BookingScreen.TimeSlotDropdown
-import com.example.cyhsalonappointmentscreens.BookingScreen.showDatePicker
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -26,17 +25,30 @@ import java.time.LocalDate
 @Composable
 fun RescheduleScreen(
     navController: NavHostController,
+    appointmentId: String,
     serviceName: String,
     oldDate: String,
-    oldTime: String,
-    availableTimeSlots: List<String> = listOf(
-        "10:00 AM", "10:30 AM", "11:00 AM", "11:30 AM", "12:00 PM"
-    )
+    oldTime: String      // This is the old timeSlotId such as "TS05"
 ) {
-    val context = LocalContext.current
+    val timeSlotDao = App.db.timeSlotDao()
+    val appointmentDao = App.db.appointmentDao()
 
-    var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var selectedTimeSlot by remember { mutableStateOf("") }
+    val viewModel: RescheduleViewModel = viewModel(
+        factory = RescheduleViewModelFactory(timeSlotDao, appointmentDao)
+    )
+
+    // Collect TimeSlot objects from DB
+    val availableTimeSlots by viewModel.timeSlots.collectAsState()
+
+    // Default selection = current date
+    var selectedDate by remember { mutableStateOf(LocalDate.parse(oldDate)) }
+
+    // Find the old TimeSlot object
+    var selectedTimeSlot by remember {
+        mutableStateOf(
+            availableTimeSlots.find { it.timeSlotId == oldTime }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -50,7 +62,6 @@ fun RescheduleScreen(
             )
         }
     ) { padding ->
-
         Column(
             modifier = Modifier
                 .padding(padding)
@@ -59,24 +70,44 @@ fun RescheduleScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // CURRENT BOOKING DETAILS
-            Text("Current Booking", fontSize = 20.sp, style = MaterialTheme.typography.titleMedium)
-            Text("Service: $serviceName")
-            Text("Date: $oldDate")
-            Text("Time: $oldTime")
+            // --- Current Booking Card ---
+            Card(
+                shape = RoundedCornerShape(12.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier.padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Text("Current Booking", fontSize = 18.sp, color = Color.Gray)
+                    Text("Service: $serviceName", fontSize = 20.sp)
+                    Text("Date: $oldDate", fontSize = 16.sp)
+                    Text(
+                        "Time: ${
+                            availableTimeSlots.find { it.timeSlotId == oldTime }?.timeSlot
+                                ?: "Unknown"
+                        }",
+                        fontSize = 16.sp
+                    )
+                }
+            }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Select New Date", fontSize = 20.sp, style = MaterialTheme.typography.titleMedium)
-
+            // --- New Date Picker ---
+            Text("Select New Date", fontSize = 18.sp)
             DatePickerField(
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it }
             )
 
+            // --- New Time Slot ---
+            Text("Select New Time Slot", fontSize = 18.sp)
             TimeSlotDropdown(
                 timeSlots = availableTimeSlots,
                 selectedSlot = selectedTimeSlot,
+                selectedDate = selectedDate,
                 onSelect = { selectedTimeSlot = it }
             )
 
@@ -84,10 +115,16 @@ fun RescheduleScreen(
 
             Button(
                 onClick = {
-                    // Confirm reschedule (you would update DB or navigate back)
+                    if (selectedTimeSlot != null) {
+                        viewModel.updateAppointment(
+                            appointmentId = appointmentId,
+                            newDate = selectedDate.toString(),
+                            newTimeSlotId = selectedTimeSlot!!.timeSlotId   // Store ID
+                        )
+                    }
                     navController.popBackStack()
                 },
-                enabled = selectedTimeSlot.isNotEmpty(),
+                enabled = selectedTimeSlot != null,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Confirm Reschedule")
@@ -95,5 +132,3 @@ fun RescheduleScreen(
         }
     }
 }
-
-

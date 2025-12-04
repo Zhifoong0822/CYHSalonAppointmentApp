@@ -1,5 +1,7 @@
 package com.example.cyhsalonappointment
 
+import android.app.NotificationChannel
+import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -48,7 +50,7 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        createNotificationChannel()
         setContent {
             val navController = rememberNavController()
             val customerDao = CustomerDatabase.getDatabase(this).customerDao()
@@ -170,24 +172,30 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(
-                    "reschedule/{name}/{date}/{time}",
+                    route = "reschedule/{appointmentId}/{serviceName}/{date}/{timeSlotId}",
                     arguments = listOf(
-                        navArgument("name") { type = NavType.StringType },
+                        navArgument("appointmentId") { type = NavType.StringType },
+                        navArgument("serviceName") { type = NavType.StringType },
                         navArgument("date") { type = NavType.StringType },
-                        navArgument("time") { type = NavType.StringType }
+                        navArgument("timeSlotId") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
-                    val name = backStackEntry.arguments?.getString("name") ?: ""
-                    val date = backStackEntry.arguments?.getString("date") ?: ""
-                    val time = backStackEntry.arguments?.getString("time") ?: ""
+                    val appointmentId = backStackEntry.arguments?.getString("appointmentId") ?: ""
+                    val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
+                    val oldDate = backStackEntry.arguments?.getString("date") ?: ""
+                    val oldTime = backStackEntry.arguments?.getString("timeSlotId") ?: ""
 
                     RescheduleScreen(
                         navController = navController,
-                        serviceName = name,
-                        oldDate = date,
-                        oldTime = time
+                        appointmentId = appointmentId,
+                        serviceName = serviceName,
+                        oldDate = oldDate,
+                        oldTime = oldTime
                     )
                 }
+
+
+
 
 
 
@@ -198,5 +206,20 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+    private fun createNotificationChannel() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val channel = NotificationChannel(
+                "appointment_channel",
+                "Appointment Notifications",
+                NotificationManager.IMPORTANCE_HIGH
+            ).apply {
+                description = "Notifies before appointment time"
+            }
+
+            val manager = getSystemService(NotificationManager::class.java)
+            manager.createNotificationChannel(channel)
+        }
+    }
+
 }
 

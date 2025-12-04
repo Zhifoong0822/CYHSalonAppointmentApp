@@ -4,6 +4,7 @@ package com.example.cyhsalonappointmentscreens.BookingScreen
 import android.app.DatePickerDialog
 import android.content.Context
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -22,10 +23,15 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import java.time.LocalDate
 import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cyhsalonappointment.App
+import com.example.cyhsalonappointment.local.entity.TimeSlot
 import com.example.cyhsalonappointment.screens.Booking.BookingViewModel
 import com.example.cyhsalonappointment.screens.Booking.BookingViewModelFactory
+import java.time.Duration
+import java.time.LocalDateTime
+import java.time.LocalTime
 
 @RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,8 +41,7 @@ fun BookingScreen(
     serviceName: String
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
-    var selectedTimeSlot by remember { mutableStateOf("") }
-
+    var selectedTimeSlot by remember { mutableStateOf<TimeSlot?>(null) }
     val context = LocalContext.current
     val timeSlotDao = App.db.timeSlotDao()
     val appointmentDao = App.db.appointmentDao()
@@ -47,6 +52,9 @@ fun BookingScreen(
 
     // Collect timeslots from DB
     val availableTimeSlots by viewModel.timeSlots.collectAsState()
+
+
+
 
     Scaffold(
         topBar = {
@@ -82,6 +90,7 @@ fun BookingScreen(
                 TimeSlotDropdown(
                     timeSlots = availableTimeSlots,
                     selectedSlot = selectedTimeSlot,
+                    selectedDate = selectedDate,
                     onSelect = { selectedTimeSlot = it }
                 )
             }
@@ -90,14 +99,30 @@ fun BookingScreen(
 
             // Payment Button
             Button(
-                onClick = {  viewModel.createAppointment(
-                    date = selectedDate.toString(),
-                    timeSlotId = selectedTimeSlot,
-                    customerId = "C0001",   // later load from login
-                    serviceId = "SV0001"    // pass service ID
-                )
+                onClick = {
+                    viewModel.createAppointment(
+                        date = selectedDate.toString(),
+                        timeSlotId = selectedTimeSlot!!.timeSlotId,
+                        customerId = "C0001",
+                        serviceId = "SV0001"
+                    )
+
+                    // -------------------------------
+                    // 📌 SCHEDULE NOTIFICATION HERE
+                    // -------------------------------
+                    val appointmentDateTime = LocalDateTime.of(
+                        selectedDate,
+                        LocalTime.parse(selectedTimeSlot!!.timeSlot)
+                    )
+
+                    viewModel.scheduleNotification(
+                        context = context,
+                        dateTime = appointmentDateTime
+                    )
+
+                    Toast.makeText(context, "Appointment booked!", Toast.LENGTH_SHORT).show()
                 },
-                enabled = selectedTimeSlot.isNotEmpty(),
+                enabled = selectedTimeSlot != null,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Make Payment")
@@ -149,43 +174,71 @@ fun DatePickerField(
 
 
 
+@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeSlotDropdown(
-    timeSlots: List<String>,
-    selectedSlot: String,
-    onSelect: (String) -> Unit
+    timeSlots: List<TimeSlot>,          // <- pass TimeSlot objects
+    selectedSlot: TimeSlot?,            // <- selected object
+    selectedDate: LocalDate,
+    onSelect: (TimeSlot) -> Unit
 ) {
+    val today = LocalDate.now()
     var expanded by remember { mutableStateOf(false) }
 
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded }
-    ) {
-        OutlinedTextField(
-            value = selectedSlot,
-            onValueChange = {},
-            readOnly = true,
-            label = { Text("Select Time Slot") },
-            modifier = Modifier.menuAnchor().fillMaxWidth()
-        )
+    val filteredSlots by remember(timeSlots, selectedDate) {
+        derivedStateOf {
+            timeSlots.filter { slot ->
+                if (selectedDate != today) {
+                    true
+                } else {
+                    val now = LocalTime.now() // <-- move here!
+                    val slotTime = LocalTime.parse(slot.timeSlot)
+                    slotTime.isAfter(now)
+                }
+            }
+        }
+    }
 
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            timeSlots.forEach { slot ->
-                DropdownMenuItem(
-                    text = { Text(slot) },
-                    onClick = {
-                        onSelect(slot)
-                        expanded = false
-                    }
+    Column {
+        if (filteredSlots.isEmpty()) {
+            Text(
+                "No available time slots",
+                color = Color.Red,
+                fontSize = 14.sp
+            )
+        } else {
+            ExposedDropdownMenuBox(
+                expanded = expanded,
+                onExpandedChange = { expanded = !expanded }
+            ) {
+                OutlinedTextField(
+                    value = selectedSlot?.timeSlot ?: "",   // display "10:00"
+                    onValueChange = {},
+                    readOnly = true,
+                    label = { Text("Select Time Slot") },
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    filteredSlots.forEach { slot ->
+                        DropdownMenuItem(
+                            text = { Text(slot.timeSlot) },
+                            onClick = {
+                                onSelect(slot)
+                                expanded = false
+                            }
+                        )
+                    }
+                }
             }
         }
     }
 }
+
 
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -194,15 +247,34 @@ fun showDatePicker(
     currentDate: LocalDate,
     onDateSelected: (LocalDate) -> Unit
 ) {
-    DatePickerDialog(
+    val datePickerDialog = DatePickerDialog(
         context,
         { _, year, month, day ->
-            onDateSelected(LocalDate.of(year, month + 1, day))
+            val selectedDate = LocalDate.of(year, month + 1, day)
+            // Only accept today or future dates
+            if (!selectedDate.isBefore(LocalDate.now())) {
+                onDateSelected(selectedDate)
+            } else {
+                Toast.makeText(context, "Cannot select past date", Toast.LENGTH_SHORT).show()
+            }
         },
         currentDate.year,
         currentDate.monthValue - 1,
         currentDate.dayOfMonth
-    ).show()
+    )
+
+    // Set the minimum date to today (in milliseconds)
+    val calendar = java.util.Calendar.getInstance()
+    calendar.set(
+        LocalDate.now().year,
+        LocalDate.now().monthValue - 1,
+        LocalDate.now().dayOfMonth
+    )
+    datePickerDialog.datePicker.minDate = calendar.timeInMillis
+
+    datePickerDialog.show()
 }
+
+
 
 

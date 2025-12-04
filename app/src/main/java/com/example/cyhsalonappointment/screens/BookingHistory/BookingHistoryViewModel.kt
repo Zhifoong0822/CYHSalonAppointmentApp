@@ -12,32 +12,46 @@ import java.time.LocalDate
 
     class BookingHistoryViewModel(private val dao: AppointmentDao) : ViewModel() {
 
-    private val _appointments = MutableLiveData<List<AppointmentDisplay>>()
-    val appointments: LiveData<List<AppointmentDisplay>> = _appointments
+        private val _appointments = MutableLiveData<List<AppointmentDisplay>>()
+        val appointments: LiveData<List<AppointmentDisplay>> = _appointments
 
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun loadAppointments() {
-        viewModelScope.launch {
-            val list = dao.getAllAppointments()
-            val today = LocalDate.now()
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun loadAppointments() {
+            viewModelScope.launch {
+                val list = dao.getAllAppointments()
+                val today = LocalDate.now()
 
-            val displayList = list.map { appt ->
-                val apptDate = LocalDate.parse(appt.appointmentDate)
-                val status = when {
-                    apptDate.isBefore(today) -> "Completed"
-                    apptDate.isEqual(today) -> "Today"
-                    else -> "Upcoming"
+                val displayList = list.map { appt ->
+                    val apptDate = LocalDate.parse(appt.appointmentDate)
+                    val status = when {
+                        appt.isCancelled -> "Cancelled"
+                        apptDate.isBefore(today) -> "Completed"
+                        apptDate.isEqual(today) -> "Today"
+                        else -> "Upcoming"
+                    }
+
+                    AppointmentDisplay(
+                        appointmentId = appt.appointmentId,
+                        serviceName = "Service Name Placeholder",
+                        date = appt.appointmentDate,
+                        timeSlotId = appt.timeSlotId,
+                        status = status
+                    )
+
                 }
 
-                AppointmentDisplay(
-                    appointmentId = appt.appointmentId,
-                    date = appt.appointmentDate,
-                    timeSlotId = appt.timeSlotId,
-                    status = status
-                )
+                _appointments.value = displayList
             }
+        }
 
-            _appointments.value = displayList
+        @RequiresApi(Build.VERSION_CODES.O)
+        fun cancelBooking(id: String) {
+            viewModelScope.launch {
+                dao.cancelAppointment(id)
+                loadAppointments() // refresh UI
+            }
         }
     }
-}
+
+
+

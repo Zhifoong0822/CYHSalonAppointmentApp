@@ -18,4 +18,11 @@ interface AppointmentDao {
 
     @Query("SELECT COUNT(*) FROM Appointment")
     suspend fun getAppointmentCount(): Int
+
+    @Query("UPDATE Appointment SET isCancelled = 1 WHERE appointmentId = :id")
+    suspend fun cancelAppointment(id: String)
+
+    //for reschedule function
+    @Query("UPDATE Appointment SET appointmentDate = :newDate, timeSlotId = :newTimeSlotId WHERE appointmentId = :appointmentId")
+    suspend fun updateAppointment(appointmentId: String, newDate: String, newTimeSlotId: String)
 }
