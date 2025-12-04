@@ -3,8 +3,11 @@ package com.example.cyhsalonappointment
 import android.app.Application
 import androidx.room.Room
 import com.example.cyhsalonappointment.local.AppDatabase
+import com.example.cyhsalonappointment.local.entity.Stylist
 import com.example.cyhsalonappointment.local.entity.TimeSlot
 import com.example.cyhsalonappointment.screens.Admin.AdminEntity
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 
@@ -32,6 +35,7 @@ class App : Application() {
             if (dao.getAllTimeSlots().isEmpty()) {
                 dao.insertTimeSlots(generateDefaultTimeSlots())
             }
+            preloadStylists()
         }
 
     }
@@ -57,6 +61,21 @@ class App : Application() {
         }
 
         return slots
+    }
+
+    private fun preloadStylists() {
+        val dao = AppDatabase.getDatabase(this).stylistDao()
+        val scope = CoroutineScope(Dispatchers.IO)
+
+        scope.launch {
+            val existing = dao.getAllStylists()
+            if (existing.isEmpty()) {
+                dao.insertStylist(Stylist("ST01", "Alice Tan", "Senior", "Female"))
+                dao.insertStylist(Stylist("ST02", "Brandon Lee", "Junior", "Male"))
+                dao.insertStylist(Stylist("ST03", "Celine Ng", "Expert", "Female"))
+                dao.insertStylist(Stylist("ST04", "Daniel Wong", "Senior", "Male"))
+            }
+        }
     }
 
     private suspend fun insertDefaultAdmin() {

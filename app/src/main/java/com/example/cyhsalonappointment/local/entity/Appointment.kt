@@ -11,5 +11,6 @@ data class Appointment(
     val timeSlotId: String,      // FK to TimeSlot, e.g., "TS0001"
     val customerId: String?,     // FK to Customer, e.g., "C0001"
     val serviceId: String?  ,     // FK to Service, e.g., "SV0001"
+    val stylistId: String?,
     val isCancelled: Boolean = false
 )

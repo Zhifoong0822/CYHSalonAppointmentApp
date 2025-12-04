@@ -37,7 +37,7 @@ class BookingViewModel(
         return "APP" + String.format("%04d", nextId)
     }
 
-    fun createAppointment(date: String, timeSlotId: String, customerId: String?, serviceId: String?) {
+    fun createAppointment(date: String, timeSlotId: String, customerId: String?, serviceId: String?, stylistId: String?) {
         viewModelScope.launch {
             val newId = generateAppointmentId()
 
@@ -46,7 +46,8 @@ class BookingViewModel(
                 appointmentDate = date,
                 timeSlotId = timeSlotId,
                 customerId = customerId,
-                serviceId = serviceId
+                serviceId = serviceId,
+                stylistId = stylistId
             )
 
             appointmentDao.insertAppointment(appointment)

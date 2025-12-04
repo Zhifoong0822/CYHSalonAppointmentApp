@@ -42,6 +42,10 @@ import com.example.cyhsalonappointment.screens.ServiceMainScreen.ServicesMainScr
 import com.example.cyhsalonappointmentscreens.BookingScreen.BookingScreen
 
 import com.example.cyhsalonappointment.screens.SignUp.SignUpScreen
+import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionScreen
+import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionViewModel
+import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionViewModelFactory
+import com.example.cyhsalonappointment.screens.TempPaymentScreen
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -60,6 +64,11 @@ class MainActivity : ComponentActivity() {
             val adminViewModel: AdminViewModel = viewModel(
                 factory = AdminViewModelFactory(adminRepo)
             )
+            val stylistDao = AppDatabase.getDatabase(this).stylistDao()
+            val stylistVM: StylistSelectionViewModel = viewModel(
+                factory = StylistSelectionViewModelFactory(stylistDao)
+            )
+
 
             NavHost(
                 navController = navController,
@@ -203,13 +212,49 @@ class MainActivity : ComponentActivity() {
                         oldTime = oldTime
                     )
                 }
+                composable(
+                    "selectStylist/{serviceName}/{selectedDate}/{selectedTimeSlot}",
+                    arguments = listOf(
+                        navArgument("serviceName") { type = NavType.StringType },
+                        navArgument("selectedDate") { type = NavType.StringType },
+                        navArgument("selectedTimeSlot") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
+                    val date = backStackEntry.arguments?.getString("selectedDate") ?: ""
+                    val slot = backStackEntry.arguments?.getString("selectedTimeSlot") ?: ""
 
+                    StylistSelectionScreen(
+                        navController = navController,
+                        stylistVM = stylistVM,
+                        serviceName = serviceName,
+                        selectedDate = date,
+                        selectedTimeSlot = slot
+                    )
+                }
 
+                composable(
+                    "tempPayment/{serviceName}/{selectedDate}/{selectedTimeSlot}/{stylistId}",
+                    arguments = listOf(
+                        navArgument("serviceName") { type = NavType.StringType },
+                        navArgument("selectedDate") { type = NavType.StringType },
+                        navArgument("selectedTimeSlot") { type = NavType.StringType },
+                        navArgument("stylistId") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+                    val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
+                    val date = backStackEntry.arguments?.getString("selectedDate") ?: ""
+                    val slot = backStackEntry.arguments?.getString("selectedTimeSlot") ?: ""
+                    val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""
 
-
-
-
-
+                    TempPaymentScreen(
+                        navController = navController,
+                        serviceName = serviceName,
+                        selectedDate = date,
+                        selectedTimeSlot = slot,
+                        stylistId = stylistId
+                    )
+                }
 
 
 

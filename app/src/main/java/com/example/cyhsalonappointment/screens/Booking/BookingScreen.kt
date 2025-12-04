@@ -97,35 +97,17 @@ fun BookingScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
-            // Payment Button
             Button(
                 onClick = {
-                    viewModel.createAppointment(
-                        date = selectedDate.toString(),
-                        timeSlotId = selectedTimeSlot!!.timeSlotId,
-                        customerId = "C0001",
-                        serviceId = "SV0001"
-                    )
+                    navController.navigate("selectStylist/$serviceName/$selectedDate/${selectedTimeSlot!!.timeSlot}")
 
-                    // -------------------------------
-                    // 📌 SCHEDULE NOTIFICATION HERE
-                    // -------------------------------
-                    val appointmentDateTime = LocalDateTime.of(
-                        selectedDate,
-                        LocalTime.parse(selectedTimeSlot!!.timeSlot)
-                    )
 
-                    viewModel.scheduleNotification(
-                        context = context,
-                        dateTime = appointmentDateTime
-                    )
 
-                    Toast.makeText(context, "Appointment booked!", Toast.LENGTH_SHORT).show()
                 },
                 enabled = selectedTimeSlot != null,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Make Payment")
+                Text("Choose Stylist")
             }
         }
     }
