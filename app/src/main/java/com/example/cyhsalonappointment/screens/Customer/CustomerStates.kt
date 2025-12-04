@@ -40,13 +40,6 @@ data class CustomerSignUpState(
     val successMessage: String? = null
 )
 
-//Customer Reset Password state
-data class ResetPasswordState(
-    val isLoading: Boolean = false,
-    val successMessage: String? = null,
-    val errorMessage: String? = null
-)
-
 //Customer Edit Profile state
 data class EditCustomerProfileState(
     val newUsername: String = "",

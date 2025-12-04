@@ -4,33 +4,30 @@ import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.cyhsalonappointment.local.AppDatabase
 import com.example.cyhsalonappointment.local.datastore.UserSessionManager
-import com.example.cyhsalonappointment.screens.Account.AccountScreen
+import com.example.cyhsalonappointment.screens.Admin.AdminRepository
+import com.example.cyhsalonappointment.screens.Admin.AdminViewModel
+import com.example.cyhsalonappointment.screens.Admin.AdminViewModelFactory
+import com.example.cyhsalonappointment.screens.AdminLogin.AdminLoginScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryViewModel
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryViewModelFactory
-import com.example.cyhsalonappointment.screens.Customer.CustomerDatabase
 import com.example.cyhsalonappointment.screens.Customer.CustomerRepository
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModelFactory
@@ -53,11 +50,16 @@ class MainActivity : ComponentActivity() {
         createNotificationChannel()
         setContent {
             val navController = rememberNavController()
-            val customerDao = CustomerDatabase.getDatabase(this).customerDao()
+            val customerDao = AppDatabase.getDatabase(this).customerDao()
+            val adminDao = AppDatabase.getDatabase(this).adminDao()
             val repository = CustomerRepository(customerDao)
+            val adminRepo = AdminRepository(adminDao)
             val session = UserSessionManager(this)
             val customerViewModel: CustomerViewModel =
                 viewModel(factory = CustomerViewModelFactory(repository, session))
+            val adminViewModel: AdminViewModel = viewModel(
+                factory = AdminViewModelFactory(adminRepo)
+            )
 
             NavHost(
                 navController = navController,
@@ -65,7 +67,8 @@ class MainActivity : ComponentActivity() {
             ) {
                 composable("logo"){
                     LogoScreen(onLoginButtonClicked = { navController.navigate("login") },
-                        onSignUpButtonClicked = { navController.navigate("sign_up") })
+                        onSignUpButtonClicked = { navController.navigate("sign_up") },
+                        onAdminLoginButtonClicked = { navController.navigate("admin_login") })
                 }
 
                 composable("login"){
@@ -81,8 +84,15 @@ class MainActivity : ComponentActivity() {
                         onSuccess = { navController.navigate("logo") })
                 }
 
+                composable("admin_login"){
+                    AdminLoginScreen(viewModel = adminViewModel,
+                        onBackButtonClicked = { navController.popBackStack() },
+                        onSuccess = { navController.navigate("services") })  //navigate to ys staff
+                }
+
                 composable("forgot_password"){
-                    ForgotPasswordScreen()
+                    ForgotPasswordScreen(viewModel = customerViewModel,
+                        onBackButtonClicked = { navController.popBackStack() })
                 }
 
                 composable("profile") {
