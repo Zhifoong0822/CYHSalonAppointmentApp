@@ -36,10 +36,16 @@ import com.example.cyhsalonappointment.R
 fun ServiceDescriptionScreen(
     navController: NavHostController,
     serviceName: String,
-    serviceDescription: String,
-    servicePrice: String,
-    serviceImageRes: Int = R.drawable.salonservice
+    serviceDescription: String
 ) {
+    val imageRes = when (serviceName) {
+        "Haircut" -> R.drawable.salonservice
+        "Hair Wash" -> R.drawable.hairwash
+        "Hair Coloring" -> R.drawable.haircoloring
+        "Hair Perm" -> R.drawable.hairperm
+        else -> R.drawable.salonservice
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,9 +69,8 @@ fun ServiceDescriptionScreen(
                 .padding(16.dp)
         ) {
 
-            // Service Image
             Image(
-                painter = painterResource(id = serviceImageRes),
+                painter = painterResource(id = imageRes),
                 contentDescription = null,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -76,7 +81,6 @@ fun ServiceDescriptionScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Service Name
             Text(
                 text = serviceName,
                 fontSize = 22.sp,
@@ -85,7 +89,6 @@ fun ServiceDescriptionScreen(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Description
             Text(
                 text = serviceDescription,
                 fontSize = 15.sp,
@@ -94,16 +97,6 @@ fun ServiceDescriptionScreen(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Price
-            Text(
-                text = "Price: RM $servicePrice",
-                fontSize = 18.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            // Book Button
             Button(
                 onClick = {
                     navController.navigate("booking/$serviceName")
@@ -115,3 +108,4 @@ fun ServiceDescriptionScreen(
         }
     }
 }
+

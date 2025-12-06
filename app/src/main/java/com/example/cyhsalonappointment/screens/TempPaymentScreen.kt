@@ -1,7 +1,6 @@
 package com.example.cyhsalonappointment.screens
 
 import android.os.Build
-import android.os.Build.*
 import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
@@ -27,14 +26,15 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 
-@RequiresApi(VERSION_CODES.O)
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TempPaymentScreen(
     navController: NavHostController,
     serviceName: String,
     selectedDate: String,
     selectedTimeSlot: String,
-    stylistId: String
+    stylistId: String,
+    hairLength: String
 ) {
     val context = LocalContext.current
     val appointmentDao = App.db.appointmentDao()
@@ -53,30 +53,36 @@ fun TempPaymentScreen(
         Text("Date: $selectedDate")
         Text("Time: $selectedTimeSlot")
         Text("Stylist ID: $stylistId")
+        Text("Hair Length: $hairLength")
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Button(
             onClick = {
-                // Create appointment
+                // -------------------------
+                // CREATE APPOINTMENT
+                // -------------------------
                 bookingViewModel.createAppointment(
                     date = selectedDate,
                     timeSlotId = selectedTimeSlot,
-                    customerId = "C0001", // TODO: replace with real session ID
-                    serviceId = serviceName, // or your real service ID
+                    customerId = "C0001",
+                    serviceId = serviceName,
                     stylistId = stylistId
                 )
 
-                // Schedule notification
+                // -------------------------
+                // SCHEDULE NOTIFICATION
+                // -------------------------
                 val appointmentDateTime = LocalDateTime.of(
                     LocalDate.parse(selectedDate),
                     LocalTime.parse(selectedTimeSlot)
                 )
+
                 bookingViewModel.scheduleNotification(context, appointmentDateTime)
 
                 Toast.makeText(context, "Appointment booked!", Toast.LENGTH_SHORT).show()
 
-                // Navigate back to home/services
+                // Go back to service list
                 navController.navigate("services") {
                     popUpTo("services") { inclusive = true }
                 }

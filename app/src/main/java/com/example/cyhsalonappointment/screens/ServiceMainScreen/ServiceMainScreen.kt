@@ -43,12 +43,8 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import com.example.cyhsalonappointment.BottomNavBar
-
-data class Service(
-    val name: String,
-    val description: String,
-    val price: String
-)
+import com.example.cyhsalonappointment.Service
+import com.example.cyhsalonappointment.ServiceData
 
 @Composable
 fun ServicesMainScreen(
@@ -56,13 +52,8 @@ fun ServicesMainScreen(
 ) {
     var searchQuery by remember { mutableStateOf("") }
 
-    val services = listOf(
-        Service("Haircut", "Professional haircut by stylist.", "25"),
-        Service("Hair Coloring", "Full hair coloring service.", "120"),
-        Service("Nail Treatment", "Manicure and pedicure session.", "50"),
-        Service("Facial", "Deep cleansing facial treatment.", "80"),
-        Service("Massage", "Relaxing full body massage.", "95")
-    ).filter { it.name.contains(searchQuery, ignoreCase = true) }
+    val services =
+        ServiceData.services.filter { it.name.contains(searchQuery, ignoreCase = true) }
 
 
     Scaffold(
@@ -119,8 +110,9 @@ fun ServiceCard(
             Button(
                 onClick = {
                     navController.navigate(
-                        "serviceDetail/${service.name}/$encodedDesc/${service.price}"
-                    )                }
+                        "serviceDetail/${service.name}/$encodedDesc"
+                    )
+                }
             ) {
                 Text("Book")
             }

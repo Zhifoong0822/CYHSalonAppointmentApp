@@ -73,7 +73,6 @@ class App : Application() {
                 dao.insertStylist(Stylist("ST01", "Alice Tan", "Senior", "Female"))
                 dao.insertStylist(Stylist("ST02", "Brandon Lee", "Junior", "Male"))
                 dao.insertStylist(Stylist("ST03", "Celine Ng", "Expert", "Female"))
-                dao.insertStylist(Stylist("ST04", "Daniel Wong", "Senior", "Male"))
             }
         }
     }

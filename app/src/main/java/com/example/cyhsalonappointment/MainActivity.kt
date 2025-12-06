@@ -156,25 +156,23 @@ class MainActivity : ComponentActivity() {
 
 
                 composable(
-                    route = "serviceDetail/{name}/{desc}/{price}",
+                    route = "serviceDetail/{name}/{desc}",
                     arguments = listOf(
                         navArgument("name") { type = NavType.StringType },
-                        navArgument("desc") { type = NavType.StringType },
-                        navArgument("price") { type = NavType.StringType }
+                        navArgument("desc") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
 
                     val name = backStackEntry.arguments?.getString("name") ?: ""
                     val desc = backStackEntry.arguments?.getString("desc") ?: ""
-                    val price = backStackEntry.arguments?.getString("price") ?: ""
 
                     ServiceDescriptionScreen(
                         navController = navController,
                         serviceName = name,
-                        serviceDescription = desc,
-                        servicePrice = price
+                        serviceDescription = desc
                     )
                 }
+
                 composable(
                     route = "booking/{serviceName}",
                     arguments = listOf(
@@ -234,25 +232,29 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(
-                    "tempPayment/{serviceName}/{selectedDate}/{selectedTimeSlot}/{stylistId}",
+                    "tempPayment/{serviceName}/{selectedDate}/{selectedTimeSlot}/{stylistId}/{hairLength}"
+                        ,
                     arguments = listOf(
                         navArgument("serviceName") { type = NavType.StringType },
                         navArgument("selectedDate") { type = NavType.StringType },
                         navArgument("selectedTimeSlot") { type = NavType.StringType },
-                        navArgument("stylistId") { type = NavType.StringType }
+                        navArgument("stylistId") { type = NavType.StringType },
+                        navArgument("hairLength") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
                     val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
                     val date = backStackEntry.arguments?.getString("selectedDate") ?: ""
                     val slot = backStackEntry.arguments?.getString("selectedTimeSlot") ?: ""
                     val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""
+                    val hairLength = backStackEntry.arguments?.getString("hairLength") ?: ""
 
                     TempPaymentScreen(
                         navController = navController,
                         serviceName = serviceName,
                         selectedDate = date,
                         selectedTimeSlot = slot,
-                        stylistId = stylistId
+                        stylistId = stylistId,
+                        hairLength = hairLength
                     )
                 }
 
