@@ -1,7 +1,6 @@
 package com.example.cyhsalonappointment.local.DAO
 
 import androidx.room.*
-import androidx.room.Insert
 import com.example.cyhsalonappointment.local.entity.Appointment
 
 @Dao
@@ -22,7 +21,45 @@ interface AppointmentDao {
     @Query("UPDATE Appointment SET isCancelled = 1 WHERE appointmentId = :id")
     suspend fun cancelAppointment(id: String)
 
-    //for reschedule function
-    @Query("UPDATE Appointment SET appointmentDate = :newDate, timeSlotId = :newTimeSlotId WHERE appointmentId = :appointmentId")
-    suspend fun updateAppointment(appointmentId: String, newDate: String, newTimeSlotId: String)
+    @Query("""
+        UPDATE Appointment
+        SET appointmentDate = :newDate, timeSlotId = :newTimeSlotId
+        WHERE appointmentId = :appointmentId
+    """)
+    suspend fun updateAppointment(
+        appointmentId: String,
+        newDate: String,
+        newTimeSlotId: String
+    )
+
+    @Query("""
+        UPDATE Appointment
+        SET finalPrice = :finalPrice,
+            serviceName = :serviceName,
+            customerName = :customerName
+        WHERE appointmentId = :appointmentId
+    """)
+    suspend fun attachDetails(
+        appointmentId: String,
+        finalPrice: Double?,
+        serviceName: String?,
+        customerName: String?
+    )
+
+    @Query("""
+    UPDATE Appointment
+    SET finalPrice = :finalPrice,
+        serviceName = :serviceName,
+        customerName = :customerName,
+        hairLength = :hairLength
+    WHERE appointmentId = :appointmentId
+""")
+    suspend fun attachDetailsOnCompletion(
+        appointmentId: String,
+        finalPrice: Double,
+        serviceName: String,
+        customerName: String,
+        hairLength: String
+    )
+
 }

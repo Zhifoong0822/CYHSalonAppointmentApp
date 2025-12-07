@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.cyhsalonappointment.local.DAO.AppointmentDao
+import com.example.cyhsalonappointment.local.DAO.ServiceDao
 import com.example.cyhsalonappointment.local.DAO.StylistDao
 import com.example.cyhsalonappointment.local.DAO.TimeSlotDao
 import com.example.cyhsalonappointment.local.entity.TimeSlot
@@ -14,11 +15,16 @@ import com.example.cyhsalonappointment.screens.Admin.AdminEntity
 import com.example.cyhsalonappointment.screens.Customer.CustomerDAO
 import com.example.cyhsalonappointment.screens.Customer.CustomerEntity
 import com.example.cyhsalonappointment.local.entity.Stylist
+import com.example.cyhsalonappointment.local.entity.ServiceCategory
+import com.example.cyhsalonappointment.local.entity.SalonService
+import com.example.cyhsalonappointment.local.DAO.ReportDAO
+
 
 
 @Database(
-    entities = [TimeSlot::class, Appointment::class, Stylist::class, CustomerEntity::class, AdminEntity::class],
-    version = 2,
+    entities = [TimeSlot::class, Appointment::class, Stylist::class, CustomerEntity::class, AdminEntity::class, ServiceCategory::class,
+        SalonService::class],
+    version = 3,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -28,6 +34,11 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun stylistDao(): StylistDao
     abstract fun customerDao(): CustomerDAO
     abstract fun adminDao(): AdminDAO
+
+    abstract fun serviceDao(): ServiceDao
+
+    abstract fun reportDao(): ReportDAO
+
 
     companion object {
         @Volatile
@@ -39,7 +50,8 @@ abstract class AppDatabase : RoomDatabase() {
                     context.applicationContext,
                     AppDatabase::class.java,
                     "salon.db"
-                ).build()
+                ).fallbackToDestructiveMigration()
+                    .build()
                 INSTANCE = instance
                 instance
             }

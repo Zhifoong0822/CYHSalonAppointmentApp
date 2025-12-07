@@ -12,5 +12,11 @@ data class Appointment(
     val customerId: String?,     // FK to Customer, e.g., "C0001"
     val serviceId: String?  ,     // FK to Service, e.g., "SV0001"
     val stylistId: String?,
-    val isCancelled: Boolean = false
+    val isCancelled: Boolean = false,
+
+    val finalPrice: Double? = null,
+    val serviceName: String? = null,
+    val customerName: String? = null,
+    val hairLength: String? = null   // "Short" | "Medium" | "Long"
+
 )

@@ -19,11 +19,19 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.cyhsalonappointment.App.Companion.db
+import com.example.cyhsalonappointment.data.ServiceRepository
 import com.example.cyhsalonappointment.local.AppDatabase
 import com.example.cyhsalonappointment.local.datastore.UserSessionManager
+import com.example.cyhsalonappointment.local.entity.SalonService
+import com.example.cyhsalonappointment.screens.Admin.AddServiceScreen
+import com.example.cyhsalonappointment.screens.Admin.AdminHomeScreen
 import com.example.cyhsalonappointment.screens.Admin.AdminRepository
 import com.example.cyhsalonappointment.screens.Admin.AdminViewModel
 import com.example.cyhsalonappointment.screens.Admin.AdminViewModelFactory
+import com.example.cyhsalonappointment.screens.Admin.EditServiceScreen
+import com.example.cyhsalonappointment.screens.Admin.ServiceListScreen
+import com.example.cyhsalonappointment.screens.Admin.ServiceViewModel
 import com.example.cyhsalonappointment.screens.AdminLogin.AdminLoginScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryScreen
 import com.example.cyhsalonappointment.screens.BookingHistory.BookingHistoryViewModel
@@ -33,19 +41,27 @@ import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModelFactory
 import com.example.cyhsalonappointment.screens.EditProfile.EditProfileScreen
 import com.example.cyhsalonappointment.screens.ForgotPassword.ForgotPasswordScreen
-import com.example.cyhsalonappointment.screens.Reschedule.RescheduleScreen
 import com.example.cyhsalonappointment.screens.Login.LoginScreen
 import com.example.cyhsalonappointment.screens.Logo.LogoScreen
 import com.example.cyhsalonappointment.screens.Profile.ProfileScreen
+import com.example.cyhsalonappointment.screens.Reschedule.RescheduleScreen
 import com.example.cyhsalonappointment.screens.ServiceDescription.ServiceDescriptionScreen
 import com.example.cyhsalonappointment.screens.ServiceMainScreen.ServicesMainScreen
-import com.example.cyhsalonappointmentscreens.BookingScreen.BookingScreen
-
 import com.example.cyhsalonappointment.screens.SignUp.SignUpScreen
 import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionScreen
 import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionViewModel
 import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionViewModelFactory
 import com.example.cyhsalonappointment.screens.TempPaymentScreen
+import com.example.cyhsalonappointment.screens.Admin.ReportRepository
+import com.example.cyhsalonappointment.screens.Admin.ReportViewModel
+import com.example.cyhsalonappointment.screens.Admin.ReportViewModelFactory
+import com.example.cyhsalonappointment.screens.Admin.ServiceViewModelFactory
+import com.example.cyhsalonappointmentscreens.BookingScreen.BookingScreen
+import com.example.cyhsalonappointment.screens.Admin.Reports.DailyReportScreen
+import com.example.cyhsalonappointment.screens.Admin.Reports.WeeklyReportScreen
+import com.example.cyhsalonappointment.screens.Admin.Reports.MonthlyReportScreen
+import com.example.cyhsalonappointment.screens.Admin.Reports.CustomerReportScreen
+
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
@@ -54,6 +70,7 @@ class MainActivity : ComponentActivity() {
         createNotificationChannel()
         setContent {
             val navController = rememberNavController()
+            val serviceDao = AppDatabase.getDatabase(this).serviceDao()
             val customerDao = AppDatabase.getDatabase(this).customerDao()
             val adminDao = AppDatabase.getDatabase(this).adminDao()
             val repository = CustomerRepository(customerDao)
@@ -68,6 +85,15 @@ class MainActivity : ComponentActivity() {
             val stylistVM: StylistSelectionViewModel = viewModel(
                 factory = StylistSelectionViewModelFactory(stylistDao)
             )
+            val serviceRepo = ServiceRepository(serviceDao)
+            val serviceVM: ServiceViewModel = viewModel(
+                factory = ServiceViewModelFactory(serviceRepo)
+            )
+
+            val reportDao = db.reportDao()
+            val reportRepo = ReportRepository(reportDao)
+            val reportVM: ReportViewModel = viewModel(factory = ReportViewModelFactory(reportRepo))
+
 
 
             NavHost(
@@ -82,7 +108,7 @@ class MainActivity : ComponentActivity() {
 
                 composable("login"){
                     LoginScreen(viewModel = customerViewModel,
-                        onSuccess = { navController.navigate("services") },
+                        onSuccess = { navController.navigate("admin_home") },
                         onBackButtonClicked = { navController.navigate("logo") },
                         onForgotPasswordClicked = { navController.navigate("forgot_password") })
                 }
@@ -96,8 +122,70 @@ class MainActivity : ComponentActivity() {
                 composable("admin_login"){
                     AdminLoginScreen(viewModel = adminViewModel,
                         onBackButtonClicked = { navController.popBackStack() },
-                        onSuccess = { navController.navigate("services") })  //navigate to ys staff
+                        onSuccess = { navController.navigate("admin_home") }
+                    )  //navigate to ys staff
                 }
+
+                // ----------------------- ADMIN NAVIGATION -----------------------
+                composable("admin_home") {
+                    AdminHomeScreen(
+                        // go to the *new* service list
+                        onManageServices = { navController.navigate("admin_services") },
+                        onGenerateDailyReport = { navController.navigate("daily_report") },
+                        onGenerateWeeklyReport = { navController.navigate("weekly_report") },
+                        onGenerateMonthlyReport = { navController.navigate("monthly_report") },
+                        onGenerateCustomerReport = { navController.navigate("customer_report") }
+                    )
+                }
+
+// ------------- REPORT SCREENS -------------
+                composable("daily_report") {
+                    DailyReportScreen(reportVM, onBack = { navController.popBackStack() })
+                }
+                composable("weekly_report") {
+                    WeeklyReportScreen(reportVM, onBack = { navController.popBackStack() })
+                }
+                composable("monthly_report") {
+                    MonthlyReportScreen(reportVM, onBack = { navController.popBackStack() })
+                }
+                composable("customer_report") {
+                    CustomerReportScreen(reportVM, onBack = { navController.popBackStack() })
+                }
+
+// ------------- SERVICE LIST (single source of truth) -------------
+                composable("admin_services") {
+                    ServiceListScreen(
+                        viewModel = serviceVM,
+                        onAddClick = { navController.navigate("admin_add_service") },
+                        onEditClick = { id ->
+                            navController.navigate("admin_edit_service/$id")
+                        }
+                    )
+                }
+
+// ------------- ADD SERVICE -------------
+                composable("admin_add_service") {
+                    AddServiceScreen(
+                        viewModel = serviceVM,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+// ------------- EDIT SERVICE (by ID) -------------
+                composable(
+                    route = "admin_edit_service/{serviceId}",
+                    arguments = listOf(navArgument("serviceId") { type = NavType.IntType })
+                ) { backStackEntry ->
+                    val id = backStackEntry.arguments?.getInt("serviceId") ?: -1
+                    EditServiceScreen(
+                        serviceId = id,
+                        viewModel = serviceVM,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+
+// ---------------------------------------------------------------
+
 
                 composable("forgot_password"){
                     ForgotPasswordScreen(viewModel = customerViewModel,
