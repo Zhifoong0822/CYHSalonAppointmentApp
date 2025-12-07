@@ -3,12 +3,16 @@ package com.example.cyhsalonappointment.screens.Admin
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -26,11 +30,35 @@ fun AdminHomeScreen(
     onGenerateDailyReport: () -> Unit,
     onGenerateWeeklyReport: () -> Unit,
     onGenerateMonthlyReport: () -> Unit,
-    onGenerateCustomerReport: () -> Unit
+    onGenerateCustomerReport: () -> Unit,
+    onLogOutButtonClicked: () -> Unit
 ) {
     var expanded by remember { mutableStateOf(false) }
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End
+        ) {
+            OutlinedButton(
+                onClick = { onLogOutButtonClicked() },
+                shape = RoundedCornerShape(12.dp),
+                colors = ButtonDefaults.outlinedButtonColors(
+                    containerColor = Color.White,
+                    contentColor = Color(0xFF2D5A4A)
+                ),
+                border = BorderStroke(1.5.dp, Color(0xFF2D5A4A)),
+                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp)
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Logout,
+                    contentDescription = "Log out",
+                    tint = Color(0xFF2D5A4A),
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        }
 
         // HEADER
         Text("My Shop", fontSize = 26.sp, fontWeight = FontWeight.Bold)

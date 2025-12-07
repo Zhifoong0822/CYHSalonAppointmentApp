@@ -108,7 +108,7 @@ class MainActivity : ComponentActivity() {
 
                 composable("login"){
                     LoginScreen(viewModel = customerViewModel,
-                        onSuccess = { navController.navigate("admin_home") },
+                        onSuccess = { navController.navigate("services") },
                         onBackButtonClicked = { navController.navigate("logo") },
                         onForgotPasswordClicked = { navController.navigate("forgot_password") })
                 }
@@ -134,7 +134,8 @@ class MainActivity : ComponentActivity() {
                         onGenerateDailyReport = { navController.navigate("daily_report") },
                         onGenerateWeeklyReport = { navController.navigate("weekly_report") },
                         onGenerateMonthlyReport = { navController.navigate("monthly_report") },
-                        onGenerateCustomerReport = { navController.navigate("customer_report") }
+                        onGenerateCustomerReport = { navController.navigate("customer_report") },
+                        onLogOutButtonClicked = { navController.navigate("logo") }
                     )
                 }
 
