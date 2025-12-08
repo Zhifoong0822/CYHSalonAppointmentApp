@@ -77,7 +77,7 @@ import java.util.Calendar
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
-                 onSuccess: () -> Unit,
+                 onSuccess: (String) -> Unit,
                  onBackButtonClicked: () -> Unit,
                  modifier: Modifier = Modifier) {
 
@@ -86,7 +86,6 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
     val shouldClearForm by viewModel.shouldClearSignUpForm.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val context = LocalContext.current
-    val calendar = Calendar.getInstance()
 
     val genderOptions = listOf("Male", "Female", "Prefer not to say")
     var passwordVisible by rememberSaveable { mutableStateOf(false) }
@@ -114,9 +113,10 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
     }
 
     LaunchedEffect(signUpState.successMessage) {
-        if (signUpState.successMessage != null) {
-            snackbarHostState.showSnackbar(signUpState.successMessage!!)
-            onSuccess()
+        signUpState.successMessage?.let { message ->
+            // Navigate to LogoScreen and pass message as query parameter
+            onSuccess(message)
+            // Clear form and messages immediately in ViewModel
             viewModel.clearSignUpForm()
             viewModel.clearSignUpMessages()
         }

@@ -102,9 +102,8 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
         }
     }
 
-    LaunchedEffect(loginState.successMessage, uiState.userProfile) {
-        if (loginState.successMessage != null && uiState.userProfile != null) {
-            snackbarHostState.showSnackbar("Login successful")
+    LaunchedEffect(loginState.successMessage) {
+        if (loginState.successMessage != null) {
             onSuccess()
             viewModel.clearLoginMessages()
         }

@@ -23,9 +23,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun AdminHomeScreen(
+    viewModel: AdminViewModel,
     onManageServices: () -> Unit,
     onGenerateDailyReport: () -> Unit,
     onGenerateWeeklyReport: () -> Unit,
@@ -42,7 +44,8 @@ fun AdminHomeScreen(
             horizontalArrangement = Arrangement.End
         ) {
             OutlinedButton(
-                onClick = { onLogOutButtonClicked() },
+                onClick = { viewModel.logout()
+                    onLogOutButtonClicked() },
                 shape = RoundedCornerShape(12.dp),
                 colors = ButtonDefaults.outlinedButtonColors(
                     containerColor = Color.White,
