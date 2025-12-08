@@ -24,7 +24,7 @@ import com.example.cyhsalonappointment.local.DAO.ReportDAO
 @Database(
     entities = [TimeSlot::class, Appointment::class, Stylist::class, CustomerEntity::class, AdminEntity::class, ServiceCategory::class,
         SalonService::class],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

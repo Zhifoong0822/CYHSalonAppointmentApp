@@ -28,6 +28,7 @@ import com.example.cyhsalonappointment.ServiceDetails.ServiceDetailViewModelFact
 import com.example.cyhsalonappointment.ServiceDetails.ServiceDetailsScreen
 import com.example.cyhsalonappointment.data.ServiceRepository
 import com.example.cyhsalonappointment.local.AppDatabase
+import com.example.cyhsalonappointment.local.DAO.AppointmentDao
 import com.example.cyhsalonappointment.local.datastore.UserSessionManager
 import com.example.cyhsalonappointment.local.entity.SalonService
 import com.example.cyhsalonappointment.screens.Admin.AddServiceScreen
@@ -81,6 +82,7 @@ class MainActivity : ComponentActivity() {
             val adminDao = AppDatabase.getDatabase(this).adminDao()
             val repository = CustomerRepository(customerDao)
             val adminRepo = AdminRepository(adminDao)
+            val appointmentDao = AppDatabase.getDatabase(this).appointmentDao()
             val session = UserSessionManager(this)
             val customerViewModel: CustomerViewModel =
                 viewModel(factory = CustomerViewModelFactory(repository, session))
@@ -103,7 +105,9 @@ class MainActivity : ComponentActivity() {
             val reportDao = db.reportDao()
             val reportRepo = ReportRepository(reportDao)
             val reportVM: ReportViewModel = viewModel(factory = ReportViewModelFactory(reportRepo))
-
+            val bookingHistoryViewModel: BookingHistoryViewModel = viewModel(
+                factory = BookingHistoryViewModelFactory(appointmentDao,serviceDao)
+            )
 
 
             NavHost(
@@ -168,7 +172,10 @@ class MainActivity : ComponentActivity() {
                         onGenerateWeeklyReport = { navController.navigate("weekly_report") },
                         onGenerateMonthlyReport = { navController.navigate("monthly_report") },
                         onGenerateCustomerReport = { navController.navigate("customer_report") },
-                        onLogOutButtonClicked = { navController.navigate("logo") }
+                        onLogOutButtonClicked = { navController.navigate("logo") },
+                        onStatusSelected ={ status ->
+                            navController.navigate("bookingHistory?isAdmin=true&status=$status")},
+                        navController = navController
                     )
                 }
 
@@ -261,17 +268,23 @@ class MainActivity : ComponentActivity() {
                     ServicesMainScreen(navController)
                 }
 
-                composable("bookingHistory") {
-                    val dao = App.db.appointmentDao()
-                    val bhVM: BookingHistoryViewModel = viewModel(
-                        factory = BookingHistoryViewModelFactory(dao)
+                composable(
+                    "bookingHistory?isAdmin={isAdmin}&status={status}",
+                    arguments = listOf(
+                        navArgument("isAdmin") { defaultValue = "false" },
+                        navArgument("status") { defaultValue = "" }
                     )
+                ) { backStackEntry ->
+                    val isAdmin = backStackEntry.arguments?.getString("isAdmin") == "true"
+                    val status = backStackEntry.arguments?.getString("status") // <- this is the filter
 
                     BookingHistoryScreen(
                         navController = navController,
-                        viewModel = bhVM,
-                        onRescheduleClick = { appt ->
-                            navController.navigate("reschedule/ServiceName/${appt.date}/${appt.timeSlotId}")
+                        viewModel = bookingHistoryViewModel,
+                        isAdmin = isAdmin,
+                        selectedStatus = status,
+                        onCancelClick = { appointment ->
+                            bookingHistoryViewModel.cancelBooking(appointment.appointmentId)
                         }
                     )
                 }
@@ -296,29 +309,35 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(
-                    "serviceDetails/{categoryId}/{selectedDate}/{selectedTimeSlot}",
+                    "serviceDetails/{categoryId}/{selectedDate}/{selectedTimeSlotId}",
                     arguments = listOf(
                         navArgument("categoryId") { type = NavType.IntType },
                         navArgument("selectedDate") { type = NavType.StringType },
-                        navArgument("selectedTimeSlot") { type = NavType.StringType }
+                        navArgument("selectedTimeSlotId") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
 
-                    val categoryId = backStackEntry.arguments!!.getInt("categoryId")
-                    val date = backStackEntry.arguments!!.getString("selectedDate")!!
-                    val slot = backStackEntry.arguments!!.getString("selectedTimeSlot")!!
+                    val categoryId = backStackEntry.arguments?.getInt("categoryId") ?: 0
+                    val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
+                    val selectedTimeSlotId = backStackEntry.arguments?.getString("selectedTimeSlotId") ?: ""
 
-                    val services = serviceDetailsViewModel
-                        .getServicesByCategory(categoryId)
-                        .collectAsState(initial = emptyList())
+                    val viewModel: ServiceDetailViewModel = viewModel(
+                        factory = ServiceDetailViewModelFactory(serviceRepo)
+                    )
 
                     ServiceDetailsScreen(
                         navController = navController,
-                        services = services.value,
-                        selectedDate = date,
-                        selectedTimeSlot = slot
+                        categoryId = categoryId,            // pass categoryId directly
+                        selectedDate = selectedDate,
+                        selectedTimeSlot = selectedTimeSlotId,
+                        viewModel = viewModel
                     )
                 }
+
+
+
+
+
 
 
 
@@ -331,11 +350,17 @@ class MainActivity : ComponentActivity() {
 
                     val name = backStackEntry.arguments?.getString("serviceName") ?: ""
 
+                    val serviceFlow = serviceRepo.getServiceByName(name)
+                    val service by serviceFlow.collectAsState(initial = null)
+                    val serviceId = service?.serviceId ?: 0
+
                     BookingScreen(
                         navController = navController,
+                        serviceId = serviceId,
                         serviceName = name
                     )
                 }
+
 
                 composable(
                     route = "reschedule/{appointmentId}/{serviceName}/{date}/{timeSlotId}",
@@ -382,31 +407,34 @@ class MainActivity : ComponentActivity() {
 
 
                 composable(
-                    "tempPayment/{serviceName}/{selectedDate}/{selectedTimeSlot}/{stylistId}/{hairLength}"
-                        ,
+                    "tempPayment/{serviceId}/{serviceName}/{selectedDate}/{selectedTimeSlotId}/{stylistId}/{hairLength}",
                     arguments = listOf(
+                        navArgument("serviceId") { type = NavType.IntType },
                         navArgument("serviceName") { type = NavType.StringType },
                         navArgument("selectedDate") { type = NavType.StringType },
-                        navArgument("selectedTimeSlot") { type = NavType.StringType },
+                        navArgument("selectedTimeSlotId") { type = NavType.StringType },
                         navArgument("stylistId") { type = NavType.StringType },
                         navArgument("hairLength") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
+                    val serviceId = backStackEntry.arguments?.getInt("serviceId") ?: 0
                     val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
-                    val date = backStackEntry.arguments?.getString("selectedDate") ?: ""
-                    val slot = backStackEntry.arguments?.getString("selectedTimeSlot") ?: ""
+                    val selectedDate = backStackEntry.arguments?.getString("selectedDate") ?: ""
+                    val selectedTimeSlotId = backStackEntry.arguments?.getString("selectedTimeSlotId") ?: ""
                     val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""
                     val hairLength = backStackEntry.arguments?.getString("hairLength") ?: ""
 
                     TempPaymentScreen(
                         navController = navController,
+                        serviceId = serviceId,
                         serviceName = serviceName,
-                        selectedDate = date,
-                        selectedTimeSlot = slot,
+                        selectedDate = selectedDate,
+                        selectedTimeSlotId = selectedTimeSlotId,
                         stylistId = stylistId,
                         hairLength = hairLength
                     )
                 }
+
 
 
 

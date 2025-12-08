@@ -14,6 +14,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -22,6 +23,7 @@ import androidx.navigation.NavHostController
 import com.example.cyhsalonappointment.App
 import com.example.cyhsalonappointment.screens.Booking.BookingViewModel
 import com.example.cyhsalonappointment.screens.Booking.BookingViewModelFactory
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
@@ -30,20 +32,26 @@ import java.time.LocalTime
 @Composable
 fun TempPaymentScreen(
     navController: NavHostController,
+    serviceId: Int,
     serviceName: String,
     selectedDate: String,
-    selectedTimeSlot: String,
+    selectedTimeSlotId: String,
     stylistId: String,
     hairLength: String
 ) {
     val context = LocalContext.current
     val appointmentDao = App.db.appointmentDao()
+    val timeSlotDao = App.db.timeSlotDao()
     val bookingViewModel: BookingViewModel = viewModel(
-        factory = BookingViewModelFactory(App.db.timeSlotDao(), appointmentDao)
+        factory = BookingViewModelFactory(timeSlotDao, appointmentDao)
     )
 
-    // Extract just the HH:mm part if possible
-    val safeTimeSlot = selectedTimeSlot.substringAfter("timeSlot=").substringBefore(")", selectedTimeSlot)
+    // Query TimeSlot by ID safely
+    val timeSlot = remember(selectedTimeSlotId) {
+        runBlocking { timeSlotDao.getTimeSlotById(selectedTimeSlotId) }
+    }
+
+    val displayTime = timeSlot?.timeSlot ?: "Unknown"
 
     Column(
         modifier = Modifier
@@ -51,10 +59,10 @@ fun TempPaymentScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Temporary Payment Screen", style = MaterialTheme.typography.titleLarge)
+        Text("Confirm Appointment", style = MaterialTheme.typography.titleLarge)
         Text("Service: $serviceName")
         Text("Date: $selectedDate")
-        Text("Time: $safeTimeSlot")
+        Text("Time: $displayTime")
         Text("Stylist ID: $stylistId")
         Text("Hair Length: $hairLength")
 
@@ -62,36 +70,23 @@ fun TempPaymentScreen(
 
         Button(
             onClick = {
-                // CREATE APPOINTMENT
                 bookingViewModel.createAppointment(
                     date = selectedDate,
-                    timeSlotId = safeTimeSlot, // use the safe string
+                    timeSlotId = selectedTimeSlotId,
                     customerId = "C0001",
-                    serviceId = serviceName,
+                    serviceId = serviceId,
                     stylistId = stylistId
                 )
 
-                // Optional: schedule notification only if time parses correctly
-                try {
-                    val appointmentDateTime = LocalDateTime.of(
-                        LocalDate.parse(selectedDate),
-                        LocalTime.parse(safeTimeSlot)
-                    )
-                    bookingViewModel.scheduleNotification(context, appointmentDateTime)
-                } catch (e: Exception) {
-                    // ignore parsing errors
-                }
-
                 Toast.makeText(context, "Appointment booked!", Toast.LENGTH_SHORT).show()
 
-                // Go back to service list
-                navController.navigate("services") {
-                    popUpTo("services") { inclusive = true }
-                }
+                navController.navigate("services")
             },
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
+            enabled = timeSlot != null // prevent booking if timeslot is missing
         ) {
-            Text("Pay & Confirm (Temporary)")
+            Text("Confirm")
         }
     }
 }
+

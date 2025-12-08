@@ -27,6 +27,8 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,6 +41,8 @@ fun StylistSelectionScreen(
 ) {
     // load service from DB
     val service by stylistVM.getService(serviceId).collectAsState(initial = null)
+    val serviceName = service?.serviceName ?: "Unknown"
+    val encodedServiceName = URLEncoder.encode(serviceName, StandardCharsets.UTF_8.toString())
 
 
 
@@ -47,6 +51,7 @@ fun StylistSelectionScreen(
 
     var selectedHairLength by remember { mutableStateOf<String?>(null) }
     var selectedStylistId by remember { mutableStateOf<String?>(null) }
+
 
     // dynamic hair length options based on DB
     val hairLengthOptions = remember(service) {
@@ -144,8 +149,9 @@ fun StylistSelectionScreen(
                 Spacer(modifier = Modifier.height(8.dp))
                 Button(
                     onClick = {
+                        val encodedHairLength = URLEncoder.encode(selectedHairLength, StandardCharsets.UTF_8.toString())
                         navController.navigate(
-                            "tempPayment/$serviceId/$selectedDate/$selectedTimeSlot/$selectedStylistId/$selectedHairLength"
+                            "tempPayment/$serviceId/$encodedServiceName/$selectedDate/$selectedTimeSlot/$selectedStylistId/$encodedHairLength"
                         )
                     },
                     enabled = selectedStylistId != null && selectedHairLength != null,

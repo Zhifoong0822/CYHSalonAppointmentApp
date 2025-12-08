@@ -62,4 +62,9 @@ interface AppointmentDao {
         hairLength: String
     )
 
+    @Query("SELECT * FROM appointment WHERE customerId = :customerId")
+    suspend fun getAppointmentsForUser(customerId: String): List<Appointment>
+
+
+
 }

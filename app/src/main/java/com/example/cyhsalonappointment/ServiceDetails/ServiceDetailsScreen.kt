@@ -15,12 +15,15 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.cyhsalonappointment.local.entity.SalonService
 
@@ -28,31 +31,29 @@ import com.example.cyhsalonappointment.local.entity.SalonService
 @Composable
 fun ServiceDetailsScreen(
     navController: NavHostController,
-    services: List<SalonService>,
+    categoryId: Int,
     selectedDate: String,
-    selectedTimeSlot: String
-) {
+    selectedTimeSlot: String,
+    viewModel: ServiceDetailViewModel = viewModel()
+){
     var selectedServiceId by remember { mutableStateOf<Int?>(null) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
+    LaunchedEffect(categoryId) {
+        viewModel.loadServicesByCategory(categoryId)
+    }
+
+    // Collect services from ViewModel
+    val services by viewModel.services.collectAsState()
+
+    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
         Text("Select Service Details", style = MaterialTheme.typography.titleLarge)
         Spacer(modifier = Modifier.height(16.dp))
 
         if (services.isEmpty()) {
-            // Show message if no services available
-            Text(
-                "No service details available.",
-                style = MaterialTheme.typography.bodyLarge
-            )
+            Text("No service details available.", style = MaterialTheme.typography.bodyLarge)
         } else {
-            // Display each service
             services.forEach { service ->
                 val isSelected = service.serviceId == selectedServiceId
-
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -63,19 +64,10 @@ fun ServiceDetailsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(service.serviceName, style = MaterialTheme.typography.titleMedium)
-
-                        // Display all non-null prices
-                        val priceTexts = mutableListOf<String>()
-                        service.priceShort?.let { priceTexts.add("Short Hair: RM $it") }
-                        service.priceMedium?.let { priceTexts.add("Medium Hair: RM $it") }
-                        service.priceLong?.let { priceTexts.add("Long Hair: RM $it") }
-                        service.priceAll?.let { priceTexts.add("All Length: RM $it") }
-
-                        if (priceTexts.isEmpty()) {
-                            Text("Price not available")
-                        } else {
-                            priceTexts.forEach { Text(it) }
-                        }
+                        service.priceShort?.let { Text("Short: RM $it") }
+                        service.priceMedium?.let { Text("Medium: RM $it") }
+                        service.priceLong?.let { Text("Long: RM $it") }
+                        service.priceAll?.let { Text("All Length: RM $it") }
                     }
                 }
             }
@@ -83,7 +75,6 @@ fun ServiceDetailsScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // Proceed button
         Button(
             onClick = {
                 selectedServiceId?.let { serviceId ->
@@ -99,3 +90,4 @@ fun ServiceDetailsScreen(
         }
     }
 }
+
