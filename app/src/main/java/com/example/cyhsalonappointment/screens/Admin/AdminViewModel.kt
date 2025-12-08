@@ -50,4 +50,17 @@ class AdminViewModel(private val repo: AdminRepository) : ViewModel() {
     fun clearError() {
         _loginState.value = _loginState.value.copy(errorMessage = null)
     }
+
+    fun clearLoginFields() {
+        _loginState.value = loginState.value.copy(
+            adminId = "",
+            password = "",
+            isSuccess = false
+        )
+    }
+
+    fun logout() {
+        _currentAdmin.value = null
+        _loginState.value = AdminLoginState()   // resets everything
+    }
 }

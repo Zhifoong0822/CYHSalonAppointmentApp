@@ -56,6 +56,10 @@ fun AdminLoginScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.clearLoginFields()
+    }
+
     Scaffold { innerPadding ->
         Column(
             modifier = Modifier

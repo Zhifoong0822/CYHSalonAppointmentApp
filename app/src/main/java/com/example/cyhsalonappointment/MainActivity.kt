@@ -9,8 +9,11 @@ import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -100,10 +103,25 @@ class MainActivity : ComponentActivity() {
                 navController = navController,
                 startDestination = "logo"
             ) {
-                composable("logo"){
-                    LogoScreen(onLoginButtonClicked = { navController.navigate("login") },
+
+                composable(
+                    route = "logo?message={message}",
+                    arguments = listOf(
+                        navArgument("message") {
+                            type = NavType.StringType
+                            defaultValue = ""
+                            nullable = true
+                        }
+                    )
+                ) { backStackEntry ->
+                    val message = backStackEntry.arguments?.getString("message") ?: ""
+
+                    LogoScreen(
+                        message = message,
+                        onLoginButtonClicked = { navController.navigate("login") },
                         onSignUpButtonClicked = { navController.navigate("sign_up") },
-                        onAdminLoginButtonClicked = { navController.navigate("admin_login") })
+                        onAdminLoginButtonClicked = { navController.navigate("admin_login") }
+                    )
                 }
 
                 composable("login"){
@@ -114,9 +132,16 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable("sign_up"){
-                    SignUpScreen(viewModel = customerViewModel,
+                    SignUpScreen(
+                        viewModel = customerViewModel,
                         onBackButtonClicked = { navController.navigate("logo") },
-                        onSuccess = { navController.navigate("logo") })
+                        onSuccess = { message ->
+                            navController.navigate("logo?message=$message") {
+                                // remove SignUpScreen from backstack
+                                popUpTo("sign_up") { inclusive = true }
+                            }
+                        }
+                    )
                 }
 
                 composable("admin_login"){
@@ -130,6 +155,7 @@ class MainActivity : ComponentActivity() {
                 composable("admin_home") {
                     AdminHomeScreen(
                         // go to the *new* service list
+                        viewModel = adminViewModel,
                         onManageServices = { navController.navigate("admin_services") },
                         onGenerateDailyReport = { navController.navigate("daily_report") },
                         onGenerateWeeklyReport = { navController.navigate("weekly_report") },
