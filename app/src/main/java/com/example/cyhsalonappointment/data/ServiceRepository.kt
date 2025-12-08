@@ -36,4 +36,8 @@ class ServiceRepository(
 
     suspend fun softDelete(serviceId: Int) =
         dao.softDelete(serviceId)
+
+    fun getServiceById(id: Int): Flow<SalonService?> = dao.getServiceById(id)
+
+
 }

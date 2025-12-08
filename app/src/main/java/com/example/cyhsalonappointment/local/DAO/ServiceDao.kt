@@ -51,5 +51,6 @@ interface ServiceDao {
     fun getServicesByCategory(categoryId: Int): Flow<List<SalonService>>
 
     @Query("SELECT * FROM services WHERE serviceId = :id LIMIT 1")
-    suspend fun getServiceById(id: Int): SalonService?
+    fun getServiceById(id: Int): Flow<SalonService?>
+
 }

@@ -37,6 +37,16 @@ class BookingViewModel(
         return "APP" + String.format("%04d", nextId)
     }
 
+    fun getCategoryIdByServiceName(serviceName: String): Int {
+        return when(serviceName) {
+            "Haircut" -> 1
+            "Hair Wash" -> 2
+            "Hair Coloring" -> 3
+            "Hair Perm" -> 4
+            else -> 0 // fallback or error
+        }
+    }
+
     fun createAppointment(date: String, timeSlotId: String, customerId: String?, serviceId: String?, stylistId: String?) {
         viewModelScope.launch {
             val newId = generateAppointmentId()

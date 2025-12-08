@@ -20,6 +20,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.cyhsalonappointment.App.Companion.db
+import com.example.cyhsalonappointment.ServiceDetails.ServiceDetailViewModel
+import com.example.cyhsalonappointment.ServiceDetails.ServiceDetailViewModelFactory
+import com.example.cyhsalonappointment.ServiceDetails.ServiceDetailsScreen
 import com.example.cyhsalonappointment.data.ServiceRepository
 import com.example.cyhsalonappointment.local.AppDatabase
 import com.example.cyhsalonappointment.local.datastore.UserSessionManager
@@ -81,15 +84,19 @@ class MainActivity : ComponentActivity() {
             val adminViewModel: AdminViewModel = viewModel(
                 factory = AdminViewModelFactory(adminRepo)
             )
+
             val stylistDao = AppDatabase.getDatabase(this).stylistDao()
-            val stylistVM: StylistSelectionViewModel = viewModel(
-                factory = StylistSelectionViewModelFactory(stylistDao)
-            )
+
             val serviceRepo = ServiceRepository(serviceDao)
+            val stylistVM: StylistSelectionViewModel = viewModel(
+                factory = StylistSelectionViewModelFactory(stylistDao,serviceRepo)
+            )
             val serviceVM: ServiceViewModel = viewModel(
                 factory = ServiceViewModelFactory(serviceRepo)
             )
-
+            val serviceDetailsViewModel: ServiceDetailViewModel = viewModel(
+                factory = ServiceDetailViewModelFactory(serviceRepo)
+            )
             val reportDao = db.reportDao()
             val reportRepo = ReportRepository(reportDao)
             val reportVM: ReportViewModel = viewModel(factory = ReportViewModelFactory(reportRepo))
@@ -263,6 +270,33 @@ class MainActivity : ComponentActivity() {
                 }
 
                 composable(
+                    "serviceDetails/{categoryId}/{selectedDate}/{selectedTimeSlot}",
+                    arguments = listOf(
+                        navArgument("categoryId") { type = NavType.IntType },
+                        navArgument("selectedDate") { type = NavType.StringType },
+                        navArgument("selectedTimeSlot") { type = NavType.StringType }
+                    )
+                ) { backStackEntry ->
+
+                    val categoryId = backStackEntry.arguments!!.getInt("categoryId")
+                    val date = backStackEntry.arguments!!.getString("selectedDate")!!
+                    val slot = backStackEntry.arguments!!.getString("selectedTimeSlot")!!
+
+                    val services = serviceDetailsViewModel
+                        .getServicesByCategory(categoryId)
+                        .collectAsState(initial = emptyList())
+
+                    ServiceDetailsScreen(
+                        navController = navController,
+                        services = services.value,
+                        selectedDate = date,
+                        selectedTimeSlot = slot
+                    )
+                }
+
+
+
+                composable(
                     route = "booking/{serviceName}",
                     arguments = listOf(
                         navArgument("serviceName") { type = NavType.StringType }
@@ -300,25 +334,26 @@ class MainActivity : ComponentActivity() {
                     )
                 }
                 composable(
-                    "selectStylist/{serviceName}/{selectedDate}/{selectedTimeSlot}",
+                    "selectStylist/{serviceId}/{selectedDate}/{selectedTimeSlot}",
                     arguments = listOf(
-                        navArgument("serviceName") { type = NavType.StringType },
+                        navArgument("serviceId") { type = NavType.IntType },
                         navArgument("selectedDate") { type = NavType.StringType },
                         navArgument("selectedTimeSlot") { type = NavType.StringType }
                     )
                 ) { backStackEntry ->
-                    val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
+                    val serviceId = backStackEntry.arguments?.getInt("serviceId")!!
                     val date = backStackEntry.arguments?.getString("selectedDate") ?: ""
                     val slot = backStackEntry.arguments?.getString("selectedTimeSlot") ?: ""
 
                     StylistSelectionScreen(
                         navController = navController,
                         stylistVM = stylistVM,
-                        serviceName = serviceName,
+                        serviceId = serviceId,
                         selectedDate = date,
                         selectedTimeSlot = slot
                     )
                 }
+
 
                 composable(
                     "tempPayment/{serviceName}/{selectedDate}/{selectedTimeSlot}/{stylistId}/{hairLength}"

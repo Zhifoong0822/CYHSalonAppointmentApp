@@ -25,34 +25,43 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.cyhsalonappointment.local.entity.Stylist
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun StylistSelectionScreen(
     navController: NavHostController,
     stylistVM: StylistSelectionViewModel,
-    serviceName: String,
+    serviceId: Int,
     selectedDate: String,
     selectedTimeSlot: String
 ) {
+    // load service from DB
+    val service by stylistVM.getService(serviceId).collectAsState(initial = null)
+
+
+
+    // load stylists
     val stylists by stylistVM.stylists.collectAsState()
+
+    var selectedHairLength by remember { mutableStateOf<String?>(null) }
     var selectedStylistId by remember { mutableStateOf<String?>(null) }
 
-    val hairLengthOptions = listOf(
-        "Short Hair" to 10,
-        "Medium Hair" to 20,
-        "Long Hair" to 30
-    )
-    var selectedHairLength by remember { mutableStateOf<String?>(null) }
+    // dynamic hair length options based on DB
+    val hairLengthOptions = remember(service) {
+        mutableListOf<Pair<String, Double>>().apply {
+            service?.priceAll?.let { add("All Length" to it) }
+            service?.priceShort?.let { add("Short Hair" to it) }
+            service?.priceMedium?.let { add("Medium Hair" to it) }
+            service?.priceLong?.let { add("Long Hair" to it) }
+        }
+    }
 
     Scaffold(
         topBar = {
             androidx.compose.material3.TopAppBar(
-                title = { Text("Select Stylist") },
+                title = { Text("Select Hair Length and Stylist") },
                 navigationIcon = {
                     androidx.compose.material3.IconButton(
                         onClick = { navController.popBackStack() }
@@ -74,45 +83,19 @@ fun StylistSelectionScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
 
-            // TITLE
+            // HAIR LENGTH SECTION FIRST
             item {
-                Text(
-                    text = "Select a Stylist",
-                    style = MaterialTheme.typography.titleLarge
-                )
-            }
-
-            // STYLIST LIST
-            items(stylists) { stylist ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { selectedStylistId = stylist.stylistID },
-                    border = if (selectedStylistId == stylist.stylistID)
-                        BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
-                    else null
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(stylist.stylistName, style = MaterialTheme.typography.titleMedium)
-                        Text("Level: ${stylist.stylistLevel}")
-                        Text("Gender: ${stylist.gender}")
-                    }
-                }
-            }
-
-            // HAIR LENGTH SECTION
-            item {
-                Text(
-                    "Select Hair Length",
-                    style = MaterialTheme.typography.titleMedium
-                )
+                Text("Select Hair Length", style = MaterialTheme.typography.titleMedium)
             }
 
             items(hairLengthOptions) { (label, price) ->
                 Card(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clickable { selectedHairLength = label },
+                        .clickable {
+                            selectedHairLength = label
+                            selectedStylistId = null // reset stylist when hair length changes
+                        },
                     border = if (selectedHairLength == label)
                         BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
                     else null
@@ -124,14 +107,45 @@ fun StylistSelectionScreen(
                 }
             }
 
+            // STYLIST LIST ONLY IF HAIR LENGTH SELECTED
+            if (selectedHairLength != null) {
+                item {
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Text("Select a Stylist", style = MaterialTheme.typography.titleMedium)
+                }
+
+                items(stylists) { stylist ->
+                    val multiplier = stylistVM.getStylistPriceMultiplier(stylist.stylistLevel)
+                    val basePrice = hairLengthOptions.firstOrNull { it.first == selectedHairLength }?.second
+                    val previewPrice = basePrice?.times(multiplier)
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { selectedStylistId = stylist.stylistID },
+                        border = if (selectedStylistId == stylist.stylistID)
+                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                        else null
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(stylist.stylistName, style = MaterialTheme.typography.titleMedium)
+                            Text("Level: ${stylist.stylistLevel}")
+                            Text("Gender: ${stylist.gender}")
+                            previewPrice?.let {
+                                Text("Price: RM %.2f".format(it))
+                            }
+                        }
+                    }
+                }
+            }
+
             // NEXT BUTTON
             item {
                 Spacer(modifier = Modifier.height(8.dp))
-
                 Button(
                     onClick = {
                         navController.navigate(
-                            "tempPayment/$serviceName/$selectedDate/$selectedTimeSlot/$selectedStylistId/$selectedHairLength"
+                            "tempPayment/$serviceId/$selectedDate/$selectedTimeSlot/$selectedStylistId/$selectedHairLength"
                         )
                     },
                     enabled = selectedStylistId != null && selectedHairLength != null,
@@ -145,9 +159,4 @@ fun StylistSelectionScreen(
         }
     }
 }
-
-
-
-
-
 

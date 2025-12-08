@@ -70,9 +70,9 @@ class App : Application() {
         scope.launch {
             val existing = dao.getAllStylists()
             if (existing.isEmpty()) {
-                dao.insertStylist(Stylist("ST01", "Alice Tan", "Senior", "Female"))
-                dao.insertStylist(Stylist("ST02", "Brandon Lee", "Junior", "Male"))
-                dao.insertStylist(Stylist("ST03", "Celine Ng", "Expert", "Female"))
+                dao.insertStylist(Stylist("ST01", "Alice Tan", "Junior", "Female"))
+                dao.insertStylist(Stylist("ST02", "Brandon Lee", "Senior", "Male"))
+                dao.insertStylist(Stylist("ST03", "Celine Ng", "Director", "Female"))
             }
         }
     }

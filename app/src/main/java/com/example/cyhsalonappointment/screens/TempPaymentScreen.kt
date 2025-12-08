@@ -42,6 +42,9 @@ fun TempPaymentScreen(
         factory = BookingViewModelFactory(App.db.timeSlotDao(), appointmentDao)
     )
 
+    // Extract just the HH:mm part if possible
+    val safeTimeSlot = selectedTimeSlot.substringAfter("timeSlot=").substringBefore(")", selectedTimeSlot)
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -51,7 +54,7 @@ fun TempPaymentScreen(
         Text("Temporary Payment Screen", style = MaterialTheme.typography.titleLarge)
         Text("Service: $serviceName")
         Text("Date: $selectedDate")
-        Text("Time: $selectedTimeSlot")
+        Text("Time: $safeTimeSlot")
         Text("Stylist ID: $stylistId")
         Text("Hair Length: $hairLength")
 
@@ -59,26 +62,25 @@ fun TempPaymentScreen(
 
         Button(
             onClick = {
-                // -------------------------
                 // CREATE APPOINTMENT
-                // -------------------------
                 bookingViewModel.createAppointment(
                     date = selectedDate,
-                    timeSlotId = selectedTimeSlot,
+                    timeSlotId = safeTimeSlot, // use the safe string
                     customerId = "C0001",
                     serviceId = serviceName,
                     stylistId = stylistId
                 )
 
-                // -------------------------
-                // SCHEDULE NOTIFICATION
-                // -------------------------
-                val appointmentDateTime = LocalDateTime.of(
-                    LocalDate.parse(selectedDate),
-                    LocalTime.parse(selectedTimeSlot)
-                )
-
-                bookingViewModel.scheduleNotification(context, appointmentDateTime)
+                // Optional: schedule notification only if time parses correctly
+                try {
+                    val appointmentDateTime = LocalDateTime.of(
+                        LocalDate.parse(selectedDate),
+                        LocalTime.parse(safeTimeSlot)
+                    )
+                    bookingViewModel.scheduleNotification(context, appointmentDateTime)
+                } catch (e: Exception) {
+                    // ignore parsing errors
+                }
 
                 Toast.makeText(context, "Appointment booked!", Toast.LENGTH_SHORT).show()
 

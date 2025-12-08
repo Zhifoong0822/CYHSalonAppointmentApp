@@ -99,16 +99,17 @@ fun BookingScreen(
 
             Button(
                 onClick = {
-                    navController.navigate("selectStylist/$serviceName/$selectedDate/${selectedTimeSlot!!.timeSlot}")
-
-
-
+                    val categoryId = viewModel.getCategoryIdByServiceName(serviceName)
+                    navController.navigate("serviceDetails/$categoryId/$selectedDate/$selectedTimeSlot")
                 },
+
+
                 enabled = selectedTimeSlot != null,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Choose Stylist")
+                Text("Proceed to Service Details")
             }
+
         }
     }
 }
