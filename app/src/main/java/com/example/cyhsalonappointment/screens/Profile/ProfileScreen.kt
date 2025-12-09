@@ -4,387 +4,218 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.remember
+import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.filled.Logout
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.navigation.NavHostController
+import com.example.cyhsalonappointment.BottomNavBar
 import com.example.cyhsalonappointment.R
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
 
 @Composable
 fun ProfileScreen(
     customerEmail: String,
+    navController: NavHostController,
     viewModel: CustomerViewModel = androidx.lifecycle.viewmodel.compose.viewModel(),
-    onBackButtonClicked: () -> Unit,
     onDeleteAccountClicked: () -> Unit = {},
     onLogoutClicked: () -> Unit = {},
     onEditProfileClicked: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val uiState = viewModel.uiState.collectAsState()
-    val snackbarHostState = remember { androidx.compose.material3.SnackbarHostState() }
+    val snackbarHostState = remember { SnackbarHostState() }
     val editProfileState = viewModel.editProfileState.collectAsState()
+
     var showDeleteDialog by remember { mutableStateOf(false) }
     var passwordInput by remember { mutableStateOf("") }
 
+    // Load profile
     LaunchedEffect(customerEmail) {
         if (customerEmail.isNotEmpty()) {
             viewModel.loadLocalUserProfile(customerEmail)
         }
     }
 
+    // Show snackbar after edit profile
     LaunchedEffect(editProfileState.value.successMessage) {
-        editProfileState.value.successMessage?.let { message ->
-            if (message.isNotBlank()) {
-                snackbarHostState.showSnackbar(message)
-                viewModel.clearEditProfileSuccessMessage()
-                viewModel.clearEditProfileForm()
-            }
+        editProfileState.value.successMessage?.let {
+            snackbarHostState.showSnackbar(it)
+            viewModel.clearEditProfileSuccessMessage()
+            viewModel.clearEditProfileForm()
         }
     }
 
     Scaffold(
-        snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        bottomBar = { BottomNavBar(navController) }
     ) { padding ->
-        val topPadding = 32.dp
-        val widthPadding = 100.dp
-        val imageSize = 120.dp
 
-        Box(
+        Column(
             modifier = Modifier
+                .padding(padding)
                 .fillMaxSize()
-                .background(
-                    brush = Brush.verticalGradient(
-                        colors = listOf(
-                            Color(0xFFFEF9F3),
-                            Color(0xFFF8F4EE)
-                        )
-                    )
-                )
+                .background(Color.White)
+                .padding(20.dp)
         ) {
-            if (uiState.value.isLoading) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    androidx.compose.material3.CircularProgressIndicator()
-                }
-            } else {
-                Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 20.dp, vertical = 16.dp)
-                        .verticalScroll(rememberScrollState())
+
+            // Title Row
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "Profile",
+                    fontSize = 26.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = Color.Black
+                )
+
+                Spacer(modifier = Modifier.weight(1f))
+
+                // Edit Button
+                OutlinedButton(
+                    onClick = onEditProfileClicked,
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        //Back Button
-                        OutlinedButton(
-                            onClick = { onBackButtonClicked() },
-                            modifier = Modifier.padding(top = 37.dp, start = 4.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = Color.White,
-                                contentColor = Color(0xFF2D5A4A)
-                            ),
-                            border = BorderStroke(1.5.dp, Color(0xFF2D5A4A)),
-                            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.ArrowBack,
-                                contentDescription = "Back",
-                                tint = Color(0xFF2D5A4A),
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.weight(1.2f))
-
-                        //Profile Title
-                        Text(
-                            text = "PROFILE",
-                            fontSize = 24.sp,
-                            fontWeight = FontWeight.ExtraBold,
-                            letterSpacing = 1.sp,
-                            color = Color(0xFF2D5A4A),
-                            modifier = Modifier.padding(top = 33.dp)
-                        )
-
-                        Spacer(modifier = Modifier.weight(1f))
-
-                        //Edit Profile Button
-                        OutlinedButton(
-                            onClick = { onEditProfileClicked() },
-                            modifier = Modifier.padding(top = topPadding, end = 4.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(
-                                containerColor = Color(0xFF4CAF50),
-                                contentColor = Color.White
-                            ),
-                            border = BorderStroke(0.dp, Color.Transparent),
-                            elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 3.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Profile",
-                                tint = Color.White,
-                                modifier = Modifier.size(20.dp)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Text(
-                                text = "Edit",
-                                fontSize = 17.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = Color.White
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(35.dp))
-
-                    //Profile Picture
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Box(
-                            modifier = Modifier
-                                .size(imageSize + 8.dp)
-                                .shadow(
-                                    elevation = 8.dp,
-                                    shape = CircleShape,
-                                    ambientColor = Color(0xFF2D5A4A).copy(alpha = 0.1f)
-                                )
-                                .background(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(Color.White, Color(0xFFF5F5F5))
-                                    ),
-                                    shape = CircleShape
-                                )
-                        ) {
-                            Image(
-                                painter = painterResource(R.drawable.profile_pic),
-                                contentDescription = "Profile Picture",
-                                modifier = Modifier
-                                    .size(imageSize)
-                                    .clip(CircleShape)
-                                    .border(4.dp, Color.White, CircleShape)
-                                    .align(Alignment.Center)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(40.dp))
-
-                    uiState.value.userProfile?.let { profile ->
-                        OutlinedCard(
-                            colors = CardDefaults.cardColors(
-                                containerColor = Color.White
-                            ),
-                            border = BorderStroke(2.dp, Color(0xFF4CAF50)),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .shadow(
-                                    elevation = 8.dp,
-                                    shape = RoundedCornerShape(16.dp),
-                                    ambientColor = Color(0xFF4CAF50).copy(alpha = 0.1f)
-                                )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(24.dp),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                ProfileField("Username", profile.username)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                ProfileField("Gender", profile.gender)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                ProfileField("Email", profile.email)
-                                Spacer(modifier = Modifier.height(4.dp))
-                                ProfileField("Contact Number", profile.contactNumber)
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(50.dp))
-
-                        Column(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.spacedBy(16.dp)
-                        ) {
-                            //Delete account
-                            OutlinedButton(
-                                onClick = { showDeleteDialog = true },
-                                modifier = Modifier
-                                    .fillMaxWidth(0.8f)
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = Color.White,
-                                    contentColor = Color(0xFFE53E3E)
-                                ),
-                                border = BorderStroke(2.dp, Color(0xFFE53E3E)),
-                                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Delete,
-                                    contentDescription = "Delete Account",
-                                    tint = Color(0xFFE53E3E),
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = "Delete Account",
-                                    fontSize = 19.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color(0xFFE53E3E)
-                                )
-                            }
-
-                            //Delete Account Confirmation Prompt
-                            if (showDeleteDialog) {
-                                AlertDialog(
-                                    onDismissRequest = { showDeleteDialog = false },
-                                    confirmButton = {
-                                        OutlinedButton(
-                                            onClick = {
-                                                val userId = uiState.value.userProfile?.customerId
-                                                val email = uiState.value.userProfile?.email ?: ""
-
-                                                if (!userId.isNullOrEmpty() && email.isNotEmpty() && passwordInput.isNotEmpty()) {
-                                                    viewModel.deleteAccount(
-                                                        userId,
-                                                        email,
-                                                        passwordInput
-                                                    )
-                                                    onDeleteAccountClicked()
-                                                    showDeleteDialog = false
-                                                }
-                                            },
-                                            colors = ButtonDefaults.outlinedButtonColors(
-                                                containerColor = Color(0xFFE53E3E),
-                                                contentColor = Color.White
-                                            ),
-                                            shape = RoundedCornerShape(8.dp)
-                                        ) {
-                                            Text("Delete Account")
-                                        }
-                                    },
-                                    dismissButton = {
-                                        TextButton(
-                                            onClick = { showDeleteDialog = false },
-                                            colors = ButtonDefaults.textButtonColors(
-                                                contentColor = Color(0xFF666666)
-                                            )
-                                        ) {
-                                            Text("Cancel")
-                                        }
-                                    },
-                                    title = {
-                                        Text(
-                                            "Confirm Delete",
-                                            fontWeight = FontWeight.Bold,
-                                            color = Color(0xFF2D5A4A)
-                                        )
-                                    },
-                                    text = {
-                                        Column {
-                                            Text(
-                                                "Please enter your password to confirm account deletion.",
-                                                color = Color(0xFF666666),
-                                                modifier = Modifier.padding(bottom = 12.dp)
-                                            )
-                                            OutlinedTextField(
-                                                value = passwordInput,
-                                                onValueChange = { passwordInput = it },
-                                                label = { Text("Password") },
-                                                visualTransformation = PasswordVisualTransformation(),
-                                                shape = RoundedCornerShape(8.dp)
-                                            )
-                                        }
-                                    },
-                                    shape = RoundedCornerShape(16.dp)
-                                )
-                            }
-
-                            //Logout Button
-                            OutlinedButton(
-                                onClick = {
-                                    viewModel.logout()
-                                    onLogoutClicked()
-                                },
-                                modifier = Modifier
-                                    .fillMaxWidth(0.8f)
-                                    .height(52.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = Color(0xFFFF6B6B),
-                                    contentColor = Color.White
-                                ),
-                                border = BorderStroke(0.dp, Color.Transparent),
-                                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 3.dp)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Logout,
-                                    contentDescription = "Log out",
-                                    tint = Color.White,
-                                    modifier = Modifier.size(24.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Text(
-                                    text = "Log out",
-                                    fontSize = 19.sp,
-                                    fontWeight = FontWeight.SemiBold,
-                                    color = Color.White
-                                )
-                            }
-                        }
-                    } ?: Text(
-                        text = "No profile loaded",
-                        modifier = Modifier.padding(16.dp),
-                        color = Color(0xFFE53E3E),
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Medium
-                    )
+                    Icon(Icons.Default.Edit, contentDescription = null)
+                    Spacer(Modifier.width(6.dp))
+                    Text("Edit")
                 }
             }
+
+            Spacer(Modifier.height(20.dp))
+
+            // Profile Picture
+            Box(
+                modifier = Modifier
+                    .size(130.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Image(
+                    painter = painterResource(R.drawable.profile_pic),
+                    contentDescription = "Profile Picture",
+                    modifier = Modifier
+                        .size(130.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.LightGray, CircleShape)
+                )
+            }
+
+            Spacer(Modifier.height(30.dp))
+
+            // User fields card
+            uiState.value.userProfile?.let { profile ->
+                Card(
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = CardDefaults.cardColors(Color.White),
+                    border = BorderStroke(1.dp, Color(0xFFDDDDDD)),
+                    elevation = CardDefaults.cardElevation(0.dp)   // removed shadow
+                ) {
+                    Column(
+                        Modifier.padding(20.dp),
+                        verticalArrangement = Arrangement.spacedBy(16.dp)
+                    ) {
+                        ProfileField("Username", profile.username)
+                        ProfileField("Gender", profile.gender)
+                        ProfileField("Email", profile.email)
+                        ProfileField("Contact Number", profile.contactNumber)
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(40.dp))
+
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+
+                // Delete Button
+                OutlinedButton(
+                    onClick = { showDeleteDialog = true },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(10.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(
+                        contentColor = Color.Red
+                    ),
+                    border = BorderStroke(1.5.dp, Color.Red)
+                ) {
+                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color.Red)
+                    Spacer(Modifier.width(10.dp))
+                    Text("Delete Account", color = Color.Red)
+                }
+
+                // Logout Button
+                Button(
+                    onClick = {
+                        viewModel.logout()
+                        onLogoutClicked()
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = Color(0xFF4CAF50),
+                        contentColor = Color.White
+                    ),
+                    shape = RoundedCornerShape(10.dp)
+                ) {
+                    Icon(Icons.Default.Logout, contentDescription = null, tint = Color.White)
+                    Spacer(Modifier.width(10.dp))
+                    Text("Log out")
+                }
+            }
+        }
+
+        // Delete Confirmation Dialog
+        if (showDeleteDialog) {
+            AlertDialog(
+                onDismissRequest = { showDeleteDialog = false },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            val userId = uiState.value.userProfile?.customerId
+                            val email = uiState.value.userProfile?.email ?: ""
+
+                            if (!userId.isNullOrEmpty() && email.isNotEmpty() && passwordInput.isNotEmpty()) {
+                                viewModel.deleteAccount(userId, email, passwordInput)
+                                onDeleteAccountClicked()
+                                showDeleteDialog = false
+                            }
+                        }
+                    ) {
+                        Text("Delete", color = Color.Red)
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showDeleteDialog = false }) {
+                        Text("Cancel")
+                    }
+                },
+                title = { Text("Confirm Delete", fontWeight = FontWeight.Bold) },
+                text = {
+                    Column {
+                        Text("Enter your password to confirm:")
+                        OutlinedTextField(
+                            value = passwordInput,
+                            onValueChange = { passwordInput = it },
+                            label = { Text("Password") }
+                        )
+                    }
+                }
+            )
         }
     }
 }
@@ -392,19 +223,8 @@ fun ProfileScreen(
 @Composable
 private fun ProfileField(label: String, value: String) {
     Column {
-        Text(
-            text = label,
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Medium,
-            color = Color(0xFF666666),
-            letterSpacing = 0.5.sp
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = value,
-            fontSize = 20.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = Color(0xFF2D5A4A)
-        )
+        Text(label, fontSize = 14.sp, color = Color.DarkGray)
+        Spacer(Modifier.height(4.dp))
+        Text(value, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
     }
 }

@@ -238,8 +238,8 @@ class MainActivity : ComponentActivity() {
                     if (userEmail.isNotEmpty()) {
                         ProfileScreen(
                             customerEmail = userEmail,
+                            navController = navController,
                             viewModel = customerViewModel,
-                            onBackButtonClicked = { navController.popBackStack() },
                             onEditProfileClicked = { navController.navigate("edit_profile") },
                             onLogoutClicked = {
                                 navController.navigate("logo") {
