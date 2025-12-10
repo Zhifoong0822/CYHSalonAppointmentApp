@@ -30,6 +30,7 @@ import com.example.cyhsalonappointment.data.ServiceRepository
 import com.example.cyhsalonappointment.local.AppDatabase
 import com.example.cyhsalonappointment.local.datastore.UserSessionManager
 import com.example.cyhsalonappointment.local.entity.SalonService
+import com.example.cyhsalonappointment.screens.Account.AccountSelectionScreen
 import com.example.cyhsalonappointment.screens.Admin.AddServiceScreen
 import com.example.cyhsalonappointment.screens.Admin.AdminHomeScreen
 import com.example.cyhsalonappointment.screens.Admin.AdminRepository
@@ -57,7 +58,7 @@ import com.example.cyhsalonappointment.screens.SignUp.SignUpScreen
 import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionScreen
 import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionViewModel
 import com.example.cyhsalonappointment.screens.StylistSelection.StylistSelectionViewModelFactory
-import com.example.cyhsalonappointment.screens.TempPaymentScreen
+
 import com.example.cyhsalonappointment.screens.Admin.ReportRepository
 import com.example.cyhsalonappointment.screens.Admin.ReportViewModel
 import com.example.cyhsalonappointment.screens.Admin.ReportViewModelFactory
@@ -67,6 +68,11 @@ import com.example.cyhsalonappointment.screens.Admin.Reports.DailyReportScreen
 import com.example.cyhsalonappointment.screens.Admin.Reports.WeeklyReportScreen
 import com.example.cyhsalonappointment.screens.Admin.Reports.MonthlyReportScreen
 import com.example.cyhsalonappointment.screens.Admin.Reports.CustomerReportScreen
+import com.example.cyhsalonappointment.screens.Payment.PaymentScreen
+import com.example.cyhsalonappointment.screens.Payment.PaymentViewModel
+import com.example.cyhsalonappointment.screens.Payment.PaymentViewModelFactory
+import com.example.cyhsalonappointment.screens.PaymentHistory.PaymentHistoryScreen
+import com.example.cyhsalonappointment.screens.Receipt.ReceiptScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -380,33 +386,104 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
+                            // ========== PAYMENT SYSTEM ROUTES ==========
 
+                // Payment Screen - UPDATED: Added stylistId parameter
                 composable(
-                    "tempPayment/{serviceName}/{selectedDate}/{selectedTimeSlot}/{stylistId}/{hairLength}"
-                        ,
+                    route = "payment/{appointmentId}/{serviceName}/{servicePrice}/{bookingDate}/{bookingTime}/{stylistId}",
                     arguments = listOf(
+                        navArgument("appointmentId") { type = NavType.StringType },
                         navArgument("serviceName") { type = NavType.StringType },
-                        navArgument("selectedDate") { type = NavType.StringType },
-                        navArgument("selectedTimeSlot") { type = NavType.StringType },
-                        navArgument("stylistId") { type = NavType.StringType },
-                        navArgument("hairLength") { type = NavType.StringType }
+                        navArgument("servicePrice") { type = NavType.FloatType },
+                        navArgument("bookingDate") { type = NavType.StringType },
+                        navArgument("bookingTime") { type = NavType.StringType },
+                        navArgument("stylistId") { type = NavType.StringType }  // Added stylistId
                     )
                 ) { backStackEntry ->
+                    val appointmentId = backStackEntry.arguments?.getString("appointmentId") ?: ""
                     val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
-                    val date = backStackEntry.arguments?.getString("selectedDate") ?: ""
-                    val slot = backStackEntry.arguments?.getString("selectedTimeSlot") ?: ""
-                    val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""
-                    val hairLength = backStackEntry.arguments?.getString("hairLength") ?: ""
+                    val servicePriceFloat = backStackEntry.arguments?.getFloat("servicePrice") ?: 0f
+                    val servicePrice = servicePriceFloat.toDouble() // Convert Float to Double
+                    val bookingDate = backStackEntry.arguments?.getString("bookingDate") ?: ""
+                    val bookingTime = backStackEntry.arguments?.getString("bookingTime") ?: ""
+                    val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""  // Get stylistId
 
-                    TempPaymentScreen(
+                    PaymentScreen(
                         navController = navController,
+                        appointmentId = appointmentId,
                         serviceName = serviceName,
-                        selectedDate = date,
-                        selectedTimeSlot = slot,
-                        stylistId = stylistId,
-                        hairLength = hairLength
+                        servicePrice = servicePrice,
+                        bookingDate = bookingDate,
+                        bookingTime = bookingTime,
+                        stylistId = stylistId  // Pass stylistId
                     )
                 }
+
+                // Receipt Screen - CORRECTED: Has stylistId parameter
+                composable(
+                    route = "receipt/{appointmentId}/{serviceName}/{servicePrice}/{bookingDate}/{bookingTime}/{paymentMethod}/{totalAmount}/{stylistId}",
+                    arguments = listOf(
+                        navArgument("appointmentId") { type = NavType.StringType },
+                        navArgument("serviceName") { type = NavType.StringType },
+                        navArgument("servicePrice") { type = NavType.FloatType },
+                        navArgument("bookingDate") { type = NavType.StringType },
+                        navArgument("bookingTime") { type = NavType.StringType },
+                        navArgument("paymentMethod") { type = NavType.StringType },
+                        navArgument("totalAmount") { type = NavType.FloatType },
+                        navArgument("stylistId") { type = NavType.StringType }  // stylistId exists
+                    )
+                ) { backStackEntry ->
+                    val appointmentId = backStackEntry.arguments?.getString("appointmentId") ?: ""
+                    val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
+                    val servicePriceFloat = backStackEntry.arguments?.getFloat("servicePrice") ?: 0f
+                    val servicePrice = servicePriceFloat.toDouble()
+                    val bookingDate = backStackEntry.arguments?.getString("bookingDate") ?: ""
+                    val bookingTime = backStackEntry.arguments?.getString("bookingTime") ?: ""
+                    val paymentMethod = backStackEntry.arguments?.getString("paymentMethod") ?: ""
+                    val totalAmountFloat = backStackEntry.arguments?.getFloat("totalAmount") ?: 0f
+                    val totalAmount = totalAmountFloat.toDouble()
+                    val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""  // Get stylistId
+
+                    val paymentDao = App.db.paymentDao()
+                    val appointmentDao = App.db.appointmentDao()
+
+                    val paymentViewModel: PaymentViewModel = viewModel(
+                        factory = PaymentViewModelFactory(paymentDao, appointmentDao)
+                    )
+
+
+
+                    ReceiptScreen(
+                        navController = navController,
+                        appointmentId = appointmentId,
+                        serviceName = serviceName,
+                        servicePrice = servicePrice,
+                        bookingDate = bookingDate,
+                        bookingTime = bookingTime,
+                        paymentMethod = paymentMethod,
+                        totalAmount = totalAmount,
+                        stylistId = stylistId  // Pass stylistId
+                    )
+                }
+
+                // Payment History Screen
+                composable("paymentHistory") {
+                    val paymentDao = App.db.paymentDao()
+                    val appointmentDao = App.db.appointmentDao()
+
+                    val paymentViewModel: PaymentViewModel = viewModel(
+                        factory = PaymentViewModelFactory(paymentDao, appointmentDao)
+                    )
+
+                    PaymentHistoryScreen(
+                        navController = navController
+                    )
+                }
+                composable("accountSelection") {
+                    AccountSelectionScreen(navController)
+                }
+
+
 
 
 

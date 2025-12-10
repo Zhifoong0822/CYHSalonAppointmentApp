@@ -27,6 +27,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import java.util.UUID
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -140,12 +141,36 @@ fun StylistSelectionScreen(
             }
 
             // NEXT BUTTON
+            // NEXT BUTTON
             item {
                 Spacer(modifier = Modifier.height(8.dp))
+
                 Button(
                     onClick = {
+                        // 1. Get the base price of selected hair length
+                        val basePrice = hairLengthOptions
+                            .first { it.first == selectedHairLength }
+                            .second
+
+                        // 2. Get the stylist's level multiplier
+                        val multiplier = stylistVM.getStylistPriceMultiplier(
+                            stylists.first { it.stylistID == selectedStylistId }.stylistLevel
+                        )
+
+                        // 3. Final computed service price
+                        val finalPrice = basePrice * multiplier
+
+                        // 4. Generate appointment ID
+                        val appointmentId = "APP" +
+                                UUID.randomUUID().toString().take(8).uppercase()
+
+                        // 5. Service name from DB
+                        val serviceName = service?.serviceName ?: "Service"
+
+                        // 6. Navigate with required parameters
                         navController.navigate(
-                            "tempPayment/$serviceId/$selectedDate/$selectedTimeSlot/$selectedStylistId/$selectedHairLength"
+                            "payment/$appointmentId/$serviceName/${finalPrice.toFloat()}/" +
+                                    "$selectedDate/$selectedTimeSlot/$selectedStylistId"
                         )
                     },
                     enabled = selectedStylistId != null && selectedHairLength != null,
@@ -156,6 +181,7 @@ fun StylistSelectionScreen(
 
                 Spacer(modifier = Modifier.height(40.dp))
             }
+
         }
     }
 }

@@ -5,6 +5,7 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.cyhsalonappointment.local.DAO.AppointmentDao
+import com.example.cyhsalonappointment.local.DAO.PaymentDao
 import com.example.cyhsalonappointment.local.DAO.ServiceDao
 import com.example.cyhsalonappointment.local.DAO.StylistDao
 import com.example.cyhsalonappointment.local.DAO.TimeSlotDao
@@ -18,12 +19,12 @@ import com.example.cyhsalonappointment.local.entity.Stylist
 import com.example.cyhsalonappointment.local.entity.ServiceCategory
 import com.example.cyhsalonappointment.local.entity.SalonService
 import com.example.cyhsalonappointment.local.DAO.ReportDAO
-
+import com.example.cyhsalonappointment.local.entity.Payment
 
 
 @Database(
     entities = [TimeSlot::class, Appointment::class, Stylist::class, CustomerEntity::class, AdminEntity::class, ServiceCategory::class,
-        SalonService::class],
+        SalonService::class, Payment::class],
     version = 3,
     exportSchema = false
 )
@@ -39,7 +40,7 @@ abstract class AppDatabase : RoomDatabase() {
 
     abstract fun reportDao(): ReportDAO
 
-
+    abstract fun paymentDao(): PaymentDao
     companion object {
         @Volatile
         private var INSTANCE: AppDatabase? = null
