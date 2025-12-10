@@ -15,4 +15,7 @@ interface TimeSlotDao {
 
     @Query("SELECT * FROM TimeSlot")
     fun getAllTimeSlotsFlow(): Flow<List<TimeSlot>>
+
+    @Query("SELECT * FROM TimeSlot WHERE timeSlotId = :id LIMIT 1")
+    suspend fun getTimeSlotById(id: String): TimeSlot?
 }

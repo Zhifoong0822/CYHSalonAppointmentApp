@@ -59,10 +59,6 @@ fun ServicesMainScreen(
 
     val snackbarHostState = remember { SnackbarHostState() }
 
-    LaunchedEffect(Unit) {
-        snackbarHostState.showSnackbar("Login successful")
-    }
-
     Scaffold(
         snackbarHost = { androidx.compose.material3.SnackbarHost(snackbarHostState) },
         bottomBar = {

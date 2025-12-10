@@ -39,5 +39,9 @@ class ServiceRepository(
 
     fun getServiceById(id: Int): Flow<SalonService?> = dao.getServiceById(id)
 
+    fun getServiceByName(name: String): Flow<SalonService?> {
+        return dao.getServiceByName(name)
+    }
+
 
 }

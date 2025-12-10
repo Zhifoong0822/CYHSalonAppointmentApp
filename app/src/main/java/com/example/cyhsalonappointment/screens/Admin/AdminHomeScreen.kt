@@ -1,5 +1,6 @@
 package com.example.cyhsalonappointment.screens.Admin
 
+import android.R.attr.onClick
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -24,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.draw.clip
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 
 @Composable
 fun AdminHomeScreen(
@@ -33,10 +35,11 @@ fun AdminHomeScreen(
     onGenerateWeeklyReport: () -> Unit,
     onGenerateMonthlyReport: () -> Unit,
     onGenerateCustomerReport: () -> Unit,
-    onLogOutButtonClicked: () -> Unit
+    onLogOutButtonClicked: () -> Unit,
+    onStatusSelected: (String) -> Unit,
+    navController: NavHostController,
 ) {
     var expanded by remember { mutableStateOf(false) }
-
     Column(Modifier.fillMaxSize().padding(16.dp)) {
 
         Row(
@@ -95,9 +98,18 @@ fun AdminHomeScreen(
             horizontalArrangement = Arrangement.SpaceBetween,
             modifier = Modifier.fillMaxWidth()
         ) {
-            StatusChip("On Going")
-            StatusChip("Canceled")
-            StatusChip("Completed")
+            StatusChip("Upcoming") {
+                navController.navigate("bookingHistory?isAdmin=true&status=Upcoming")
+            }
+            StatusChip("Today") {
+                navController.navigate("bookingHistory?isAdmin=true&status=Today")
+            }
+            StatusChip("Cancelled") {
+                navController.navigate("bookingHistory?isAdmin=true&status=Cancelled")
+            }
+            StatusChip("Completed") {
+                navController.navigate("bookingHistory?isAdmin=true&status=Completed")
+            }
         }
 
         Spacer(Modifier.height(28.dp))
@@ -166,11 +178,11 @@ fun SubMenuItem(title: String, onClick: () -> Unit) {
 }
 
 @Composable
-fun StatusChip(title: String) {
+fun StatusChip(title: String, onClick: () -> Unit) {
     Surface(
         color = Color(0xFFE3E3E3),
         shape = CircleShape,
-        modifier = Modifier.size(90.dp)
+        modifier = Modifier.size(90.dp).clickable { onClick() }
     ) {
         Box(contentAlignment = Alignment.Center) {
             Text(text = title, fontSize = 13.sp)

@@ -17,12 +17,26 @@ fun BottomNavBar(navController: NavHostController) {
     val items = listOf("services", "bookingHistory", "accountSelection")
 
     NavigationBar {
+        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+
         items.forEach { screen ->
-            val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+            val isSelected = when(screen) {
+                "services" -> currentRoute == "services"
+                "bookingHistory" -> currentRoute?.startsWith("bookingHistory") == true
+                "profile" -> currentRoute == "profile"
+                else -> false
+            }
+
+            val onClickAction = when(screen) {
+                "services" -> { { navController.navigate("services") } }
+                "bookingHistory" -> { { navController.navigate("bookingHistory?isAdmin=false&status=") } }
+                "profile" -> { { navController.navigate("profile") } }
+                else -> { {} }
+            }
 
             NavigationBarItem(
-                selected = currentRoute == screen,
-                onClick = { navController.navigate(screen) },
+                selected = isSelected,
+                onClick = onClickAction,
                 icon = {
                     when (screen) {
                         "services" -> Icon(Icons.Default.Home, "Services")
@@ -43,3 +57,4 @@ fun BottomNavBar(navController: NavHostController) {
         }
     }
 }
+

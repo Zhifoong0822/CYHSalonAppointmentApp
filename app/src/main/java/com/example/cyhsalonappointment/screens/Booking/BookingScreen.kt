@@ -38,6 +38,7 @@ import java.time.LocalTime
 @Composable
 fun BookingScreen(
     navController: NavHostController,
+    serviceId: Int,
     serviceName: String
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
@@ -100,15 +101,14 @@ fun BookingScreen(
             Button(
                 onClick = {
                     val categoryId = viewModel.getCategoryIdByServiceName(serviceName)
-                    navController.navigate("serviceDetails/$categoryId/$selectedDate/$selectedTimeSlot")
+                    navController.navigate("serviceDetails/$categoryId/$selectedDate/${selectedTimeSlot?.timeSlotId}")
                 },
-
-
                 enabled = selectedTimeSlot != null,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text("Proceed to Service Details")
             }
+
 
         }
     }

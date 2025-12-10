@@ -53,4 +53,6 @@ interface ServiceDao {
     @Query("SELECT * FROM services WHERE serviceId = :id LIMIT 1")
     fun getServiceById(id: Int): Flow<SalonService?>
 
+    @Query("SELECT * FROM services WHERE serviceName = :name LIMIT 1")
+    fun getServiceByName(name: String): Flow<SalonService?>
 }
