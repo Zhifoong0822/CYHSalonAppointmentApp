@@ -23,14 +23,14 @@ fun BottomNavBar(navController: NavHostController) {
             val isSelected = when(screen) {
                 "services" -> currentRoute == "services"
                 "bookingHistory" -> currentRoute?.startsWith("bookingHistory") == true
-                "profile" -> currentRoute == "profile"
+                "accountSelection" -> currentRoute == "accountSelection"
                 else -> false
             }
 
             val onClickAction = when(screen) {
                 "services" -> { { navController.navigate("services") } }
                 "bookingHistory" -> { { navController.navigate("bookingHistory?isAdmin=false&status=") } }
-                "profile" -> { { navController.navigate("profile") } }
+                "accountSelection" -> { { navController.navigate("accountSelection") } }
                 else -> { {} }
             }
 

@@ -1,5 +1,6 @@
 package com.example.cyhsalonappointment.screens.Payment
 
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
@@ -216,13 +217,21 @@ fun PaymentScreen(
             // ----------------------- Pay Button -----------------------
             Button(
                 onClick = {
-                    selectedPaymentMethod?.let {
+                    selectedPaymentMethod?.let { method ->
+
+                        val encodedServiceName = Uri.encode(serviceName)
+                        val encodedDate = Uri.encode(bookingDate)
+                        val encodedTime = Uri.encode(displayTime)
+                        val encodedMethod = Uri.encode(method)
+                        val encodedStylist = Uri.encode(stylistId)
+
                         navController.navigate(
-                            "receipt/$appointmentId/$serviceName/${servicePrice.toFloat()}/" +
-                                    "$bookingDate/$displayTime/$it/${bookingFee.toFloat()}/$stylistId"
-                        ) // Changed from bookingTime to displayTime
+                            "receipt/$appointmentId/$encodedServiceName/${servicePrice.toFloat()}/" +
+                                    "$encodedDate/$encodedTime/$encodedMethod/${bookingFee.toFloat()}/$encodedStylist"
+                        )
                     }
                 },
+
                 enabled = selectedPaymentMethod != null,
                 modifier = Modifier
                     .fillMaxWidth()
