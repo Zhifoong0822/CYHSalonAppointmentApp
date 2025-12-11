@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CreditCard
 import androidx.compose.material3.*
+import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -19,6 +20,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.cyhsalonappointment.App
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.TextStyle
 import java.util.Locale
@@ -37,6 +41,9 @@ fun PaymentScreen(
 ) {
     var selectedPaymentMethod by remember { mutableStateOf<String?>(null) }
 
+    val stylistName = remember { mutableStateOf("Unknown Stylist") }
+    val stylistLevel = remember { mutableStateOf("Beginner") }
+    val isLoading = remember { mutableStateOf(true) }
     // Extract the actual time from the TimeSlot object string
     val displayTime = remember(bookingTime) {
         extractTimeFromTimeSlotString(bookingTime)
@@ -59,6 +66,27 @@ fun PaymentScreen(
             " ${date.dayOfMonth} " +
             date.month.getDisplayName(TextStyle.SHORT, Locale.getDefault()) +
             " ${date.year}"
+    LaunchedEffect(stylistId) {
+        if (!stylistId.isNullOrEmpty()) {
+            withContext(Dispatchers.IO) {
+                try {
+                    val stylist = App.db.stylistDao().getStylistById(stylistId)
+                    if (stylist != null) {
+                        stylistName.value = stylist.stylistName
+                        stylistLevel.value = stylist.stylistLevel
+                    }
+                    println("ReceiptScreen - Found stylist: ${stylistName.value}, Level: ${stylistLevel.value}")
+                } catch (e: Exception) {
+                    println("ReceiptScreen - Error fetching stylist: ${e.message}")
+                } finally {
+                    isLoading.value = false
+                }
+            }
+        } else {
+            isLoading.value = false
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -113,8 +141,8 @@ fun PaymentScreen(
                     }
 
                     Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                        Text("Stylist ID:", color = Color.Gray)
-                        Text(stylistId)
+                        Text("Stylist :", color = Color.Gray)
+                        Text("${stylistName.value} (${stylistLevel.value})")
                     }
                 }
             }
@@ -246,28 +274,49 @@ fun PaymentScreen(
 
 
 fun extractTimeFromTimeSlotString(timeSlotString: String): String {
+    val timeSlotMap = mapOf(
+
+        "TS0001" to "10:00",
+        "TS0002" to "10:30",
+        "TS0003" to "11:00",
+        "TS0004" to "11:30",
+        "TS0005" to "12:00",
+        "TS0006" to "12:30",
+        "TS0007" to "13:00",
+        "TS0008" to "13:30",
+        "TS0009" to "14:00",
+        "TS0010" to "14:30",
+        "TS0011" to "15:00",
+        "TS0012" to "15:30",
+        "TS0013" to "16:00",
+        "TS0014" to "16:30",
+        "TS0015" to "17:00",
+        "TS0016" to "17:30",
+        "TS0017" to "18:00"
+    )
+
     return try {
-
-        if (timeSlotString.startsWith("Timeslot(") || timeSlotString.startsWith("TimeSlot(")) {
-
-            val timeslotPattern = """timeslot=\s*([^,)]+)""".toRegex(RegexOption.IGNORE_CASE)
-            val match = timeslotPattern.find(timeSlotString)
-
-            if (match != null) {
-                val time = match.groupValues[1].trim()
-
-                time.replace("\"", "").replace("'", "").trim()
-            } else {
-
-                val timePattern = """(\d{1,2}:\d{2})""".toRegex()
-                timePattern.find(timeSlotString)?.value ?: timeSlotString
-            }
-        } else {
-
-            timeSlotString
+        // 1. Extract actual time inside "timeslot= 10:30"
+        if (timeSlotString.contains("timeslot=")) {
+            val regex = """timeslot=\s*([^,)]+)""".toRegex()
+            regex.find(timeSlotString)?.groupValues?.get(1)?.trim() ?: timeSlotString
         }
-    } catch (e: Exception) {
 
+        // 2. Extract timeslotId=TS0002 → map to time
+        else if (timeSlotString.contains("timeslotId=", ignoreCase = true)) {
+            val regex = """timeslotId=\s*(TS\d{4})""".toRegex(RegexOption.IGNORE_CASE)
+            val id = regex.find(timeSlotString)?.groupValues?.get(1)
+            timeSlotMap[id] ?: timeSlotString
+        }
+
+        // 3. If input IS the ID — e.g., "TS0002"
+        else if (timeSlotMap.containsKey(timeSlotString.trim())) {
+            timeSlotMap[timeSlotString.trim()]!!
+        }
+
+        else timeSlotString
+
+    } catch (e: Exception) {
         timeSlotString
     }
 }

@@ -107,7 +107,7 @@ fun ReceiptScreen(
                 taxAmount = taxAmount,
                 totalAmount = totalAmount,
                 paymentMethod = paymentMethod,
-                paymentDate = bookingDate,
+                paymentDate = receiptDate,
                 paymentTime = receiptTime
             )
 
