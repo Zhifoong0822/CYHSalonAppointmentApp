@@ -1,7 +1,10 @@
 package com.example.cyhsalonappointment.screens.Admin
 
 import android.widget.Toast
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -54,6 +57,16 @@ fun EditServiceScreen(
     val isFormValid = isSinglePriceValid || isLengthPriceValid
 
     Column(Modifier.fillMaxSize().padding(16.dp)) {
+
+        Icon(
+            imageVector = Icons.Default.ArrowBack,
+            contentDescription = "Back",
+            modifier = Modifier
+                .size(28.dp)
+                .clickable { onBack() }
+        )
+
+        Spacer(Modifier.height(12.dp))
 
         Text("My Services", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(8.dp))

@@ -17,13 +17,17 @@ fun MonthlyReportScreen(viewModel: ReportViewModel, onBack: () -> Unit) {
     LaunchedEffect(true) {
         viewModel.loadReport(start, end)
     }
+    if (result == null) {
+        LoadingReportUI()
+    } else {
+        ReportLayout(
+            title = "Monthly Report",
+            totalSales = result?.totalSales ?: 0.0,
+            totalAppointments = result?.totalAppointments ?: 0,
+            average = result?.averagePerAppointment ?: 0.0,
+            services = result?.serviceRanking ?: emptyList(),
+            onBack = onBack
+        )
+    }
 
-    ReportLayout(
-        title = "Monthly Report",
-        totalSales = result?.totalSales ?: 0.0,
-        totalAppointments = result?.totalAppointments ?: 0,
-        average = result?.averagePerAppointment ?: 0.0,
-        services = result?.serviceRanking ?: emptyList(),
-        onBack = onBack
-    )
 }

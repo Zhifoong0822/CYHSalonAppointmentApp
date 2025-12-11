@@ -11,9 +11,15 @@ fun CustomerReportScreen(viewModel: ReportViewModel, onBack: () -> Unit) {
         viewModel.loadReport("0000-01-01", "9999-12-31") // full history
     }
 
-    CustomerReportLayout(
-        title = "Top Customers",
-        customers = result?.customerRanking ?: emptyList(),
-        onBack = onBack
-    )
+    if (result == null){
+        LoadingReportUI()
+    } else {
+        CustomerReportLayout(
+            title = "Top Customers",
+            customers = result?.customerRanking ?: emptyList(),
+            onBack = onBack
+        )
+    }
+
+
 }

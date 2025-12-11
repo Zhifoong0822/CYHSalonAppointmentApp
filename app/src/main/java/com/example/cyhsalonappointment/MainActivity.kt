@@ -191,16 +191,24 @@ class MainActivity : ComponentActivity() {
 
 // ------------- REPORT SCREENS -------------
                 composable("daily_report") {
-                    DailyReportScreen(reportVM, onBack = { navController.popBackStack() })
+                    DailyReportScreen(
+                        reportVM,
+                        onBack = { navController.popBackStack() })
                 }
                 composable("weekly_report") {
-                    WeeklyReportScreen(reportVM, onBack = { navController.popBackStack() })
+                    WeeklyReportScreen(
+                        reportVM,
+                        onBack = { navController.popBackStack() })
                 }
                 composable("monthly_report") {
-                    MonthlyReportScreen(reportVM, onBack = { navController.popBackStack() })
+                    MonthlyReportScreen(
+                        reportVM,
+                        onBack = { navController.popBackStack() })
                 }
                 composable("customer_report") {
-                    CustomerReportScreen(reportVM, onBack = { navController.popBackStack() })
+                    CustomerReportScreen(
+                        reportVM,
+                        onBack = { navController.popBackStack() })
                 }
 
 // ------------- SERVICE LIST (single source of truth) -------------
@@ -209,8 +217,8 @@ class MainActivity : ComponentActivity() {
                         viewModel = serviceVM,
                         onAddClick = { navController.navigate("admin_add_service") },
                         onEditClick = { id ->
-                            navController.navigate("admin_edit_service/$id")
-                        }
+                            navController.navigate("admin_edit_service/$id") },
+                        onBack = { navController.popBackStack() }
                     )
                 }
 

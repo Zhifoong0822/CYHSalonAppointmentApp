@@ -29,8 +29,9 @@ fun CustomerReportLayout(
 
         customers.forEach {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
-                Text(it.customerName)
-                Text("RM ${it.spent}")
+                Text("Customer: ${it.customerId}")
+                Text("Spent: RM ${it.totalSpent}")
+
             }
             Divider()
         }
