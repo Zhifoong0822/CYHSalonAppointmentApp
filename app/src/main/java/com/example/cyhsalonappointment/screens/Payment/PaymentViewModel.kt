@@ -26,7 +26,7 @@ class PaymentViewModel(
     // ADD THIS: Simple data class to hold payment with service name
     data class PaymentWithService(
         val payment: Payment,
-        val serviceName: String
+     val appointment: Appointment
     )
 
     fun loadPayments() {
@@ -41,19 +41,21 @@ class PaymentViewModel(
     fun loadPaymentsWithServiceNames() {
         viewModelScope.launch {
             paymentDao.getAllPayments().collect { paymentList ->
-                val paymentsWithServiceNames = mutableListOf<PaymentWithService>()
+                val result = mutableListOf<PaymentWithService>()
 
-                // For each payment, get the service name from appointment
                 for (payment in paymentList) {
                     val appointment = appointmentDao.getAppointmentById(payment.appointmentId)
-                    val serviceName = appointment?.serviceName ?: "Unknown Service"
-
-                    paymentsWithServiceNames.add(
-                        PaymentWithService(payment, serviceName)
-                    )
+                    if (appointment != null) {
+                        result.add(
+                            PaymentWithService(
+                                payment = payment,
+                                appointment = appointment
+                            )
+                        )
+                    }
                 }
 
-                _paymentsWithServices.value = paymentsWithServiceNames
+                _paymentsWithServices.value = result
             }
         }
     }

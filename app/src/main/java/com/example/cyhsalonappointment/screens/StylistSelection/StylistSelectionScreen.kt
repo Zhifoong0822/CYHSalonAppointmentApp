@@ -176,7 +176,7 @@ fun StylistSelectionScreen(
                         val encodedServiceName = URLEncoder.encode(serviceNameFromDb, StandardCharsets.UTF_8.toString())
 
                         navController.navigate(
-                            "payment/$appointmentId/$encodedServiceName/${finalPrice.toFloat()}/" +
+                            "payment/$appointmentId/$encodedServiceName/${finalPrice.toFloat()}/$serviceId/" +
                                     "$selectedDate/$selectedTimeSlot/$stylistId"
                         )
 

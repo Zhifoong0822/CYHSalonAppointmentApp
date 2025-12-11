@@ -79,9 +79,10 @@ fun PaymentHistoryScreen(
                 items(paymentsWithServices) { paymentWithService ->
                     PaymentHistoryCard(
                         payment = paymentWithService.payment,
-                        serviceName = paymentWithService.serviceName // Now this is directly available!
+                        appointment = paymentWithService.appointment
                     )
                 }
+
             }
         }
     }
@@ -90,7 +91,7 @@ fun PaymentHistoryScreen(
 @Composable
 fun PaymentHistoryCard(
     payment: com.example.cyhsalonappointment.local.entity.Payment,
-    serviceName: String
+    appointment:  com.example.cyhsalonappointment.local.entity.Appointment
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -116,7 +117,7 @@ fun PaymentHistoryCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Service: $serviceName",
+                    text = "Service: ${appointment.serviceName}",
                     fontSize = 14.sp,
                     color = Color.Gray
                 )

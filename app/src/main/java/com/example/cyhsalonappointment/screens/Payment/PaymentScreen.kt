@@ -2,6 +2,7 @@ package com.example.cyhsalonappointment.screens.Payment
 
 import android.net.Uri
 import android.os.Build
+import android.widget.Toast
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -16,12 +17,17 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import com.example.cyhsalonappointment.App
+import com.example.cyhsalonappointment.screens.Booking.BookingViewModel
+import com.example.cyhsalonappointment.screens.Booking.BookingViewModelFactory
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.TextStyle
@@ -35,11 +41,25 @@ fun PaymentScreen(
     appointmentId: String,
     serviceName: String,
     servicePrice: Double,
+    serviceId: Int,
     bookingDate: String,
     bookingTime: String, // This is "Timeslot(timeslotId=TS0002, timeslot= 10:30)"
     stylistId: String
 ) {
     var selectedPaymentMethod by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    val appointmentDao = App.db.appointmentDao()
+    val timeSlotDao = App.db.timeSlotDao()
+    val bookingViewModel: BookingViewModel = viewModel(
+        factory = BookingViewModelFactory(timeSlotDao, appointmentDao)
+    )
+
+    // Query TimeSlot by ID safely
+    val timeSlot = remember(bookingTime) {
+        runBlocking { timeSlotDao.getTimeSlotById(bookingTime) }
+    }
+
+    val showTime = timeSlot?.timeSlot ?: "Unknown"
 
     val stylistName = remember { mutableStateOf("Unknown Stylist") }
     val stylistLevel = remember { mutableStateOf("Beginner") }
@@ -245,6 +265,15 @@ fun PaymentScreen(
             // ----------------------- Pay Button -----------------------
             Button(
                 onClick = {
+                    bookingViewModel.createAppointment(
+                        date = bookingDate,
+                        timeSlotId = bookingTime,
+                        customerId = "C0001",
+                        serviceId = serviceId,
+                        stylistId = stylistId
+                    )
+
+                    Toast.makeText(context, "Appointment booked!", Toast.LENGTH_SHORT).show()
                     selectedPaymentMethod?.let { method ->
 
                         val encodedServiceName = Uri.encode(serviceName)

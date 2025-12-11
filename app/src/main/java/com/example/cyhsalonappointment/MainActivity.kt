@@ -422,11 +422,12 @@ class MainActivity : ComponentActivity() {
 
 // Payment main route
                 composable(
-                    route = "payment/{appointmentId}/{serviceName}/{servicePrice}/{bookingDate}/{bookingTime}/{stylistId}",
+                    route = "payment/{appointmentId}/{serviceName}/{servicePrice}/{serviceId}/{bookingDate}/{bookingTime}/{stylistId}",
                     arguments = listOf(
                         navArgument("appointmentId") { type = NavType.StringType },
                         navArgument("serviceName") { type = NavType.StringType },
                         navArgument("servicePrice") { type = NavType.FloatType },
+                        navArgument("serviceId") { type = NavType.IntType },
                         navArgument("bookingDate") { type = NavType.StringType },
                         navArgument("bookingTime") { type = NavType.StringType },
                         navArgument("stylistId") { type = NavType.StringType }
@@ -435,6 +436,7 @@ class MainActivity : ComponentActivity() {
                     val appointmentId = backStackEntry.arguments?.getString("appointmentId") ?: ""
                     val serviceName = backStackEntry.arguments?.getString("serviceName") ?: ""
                     val servicePrice = backStackEntry.arguments?.getFloat("servicePrice")?.toDouble() ?: 0.0
+                    val serviceId= backStackEntry.arguments?.getInt("serviceId")!!
                     val bookingDate = backStackEntry.arguments?.getString("bookingDate") ?: ""
                     val bookingTime = backStackEntry.arguments?.getString("bookingTime") ?: ""
                     val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""
@@ -445,6 +447,7 @@ class MainActivity : ComponentActivity() {
                         appointmentId = appointmentId,
                         serviceName = serviceName,
                         servicePrice = servicePrice,
+                        serviceId = serviceId,
                         bookingDate = bookingDate,
                         bookingTime = bookingTime,
                         stylistId = stylistId,
