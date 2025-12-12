@@ -303,6 +303,11 @@ class MainActivity : ComponentActivity() {
                         customerId = customerId ?:"",   // <-- pass it here
                         isAdmin = isAdmin,
                         selectedStatus = status,
+                        onRescheduleClick = { appointment ->
+                            navController.navigate(
+                                "reschedule/${appointment.appointmentId}/${appointment.serviceName}/${appointment.date}/${appointment.timeSlotId}"
+                            )
+                        },
                         onCancelClick = { appointment ->
                             bookingHistoryViewModel.cancelBooking(
                                 id = appointment.appointmentId,
