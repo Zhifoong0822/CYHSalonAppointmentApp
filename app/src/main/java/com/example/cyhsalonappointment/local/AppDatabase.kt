@@ -16,15 +16,20 @@ import com.example.cyhsalonappointment.screens.Admin.AdminEntity
 import com.example.cyhsalonappointment.screens.Customer.CustomerDAO
 import com.example.cyhsalonappointment.screens.Customer.CustomerEntity
 import com.example.cyhsalonappointment.local.entity.Stylist
-import com.example.cyhsalonappointment.local.entity.ServiceCategory
 import com.example.cyhsalonappointment.local.entity.SalonService
 import com.example.cyhsalonappointment.local.DAO.ReportDAO
 import com.example.cyhsalonappointment.local.entity.Payment
 
 
 @Database(
-    entities = [TimeSlot::class, Appointment::class, Stylist::class, CustomerEntity::class, AdminEntity::class, ServiceCategory::class,
-        SalonService::class, Payment::class],
+    entities = [
+        TimeSlot::class,
+        Appointment::class,
+        Stylist::class,
+        CustomerEntity::class,
+        AdminEntity::class,
+        SalonService::class,
+        Payment::class],
     version = 4,
     exportSchema = false
 )

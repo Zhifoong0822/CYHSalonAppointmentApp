@@ -2,27 +2,10 @@ package com.example.cyhsalonappointment.local.DAO
 
 import androidx.room.*
 import com.example.cyhsalonappointment.local.entity.SalonService
-import com.example.cyhsalonappointment.local.entity.ServiceCategory
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ServiceDao {
-
-    // ---------------- CATEGORY CRUD ----------------
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertCategory(category: ServiceCategory)
-
-    @Update
-    suspend fun updateCategory(category: ServiceCategory)
-
-    @Delete
-    suspend fun deleteCategory(category: ServiceCategory)
-
-    @Query("SELECT * FROM service_categories ORDER BY categoryName ASC")
-    fun getCategories(): Flow<List<ServiceCategory>>
-
-    @Query("SELECT * FROM service_categories WHERE categoryName = :name LIMIT 1")
-    suspend fun getCategoryByName(name: String): ServiceCategory?
 
     // ---------------- SERVICE CRUD ----------------
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -15,8 +15,13 @@ fun AddServiceScreen(
     viewModel: ServiceViewModel,
     onBack: () -> Unit
 ) {
-    // ---------------- CATEGORY + SERVICE NAME SETUP ----------------
-    val categories = listOf("Hair Cut", "Hair Wash", "Hair Colouring", "Hair Perm")
+    // FIXED category list (ID + label)
+    val categories = listOf(
+        1 to "Hair Cut",
+        2 to "Hair Wash",
+        3 to "Hair Colouring",
+        4 to "Hair Perm"
+    )
 
     val servicesMap = mapOf(
         "Hair Cut" to listOf("Student Hair Cut", "Men Hair Cut", "Women Hair Cut"),
@@ -30,18 +35,18 @@ fun AddServiceScreen(
         "Men Hair Wash", "Touch Up", "Root Perm"
     )
 
-    var selectedCategory by remember { mutableStateOf("") }
-    var selectedService by remember { mutableStateOf("") }
-
     var categoryExpanded by remember { mutableStateOf(false) }
     var serviceExpanded by remember { mutableStateOf(false) }
+
+    var selectedCategoryId by remember { mutableStateOf<Int?>(null) }
+    var selectedCategoryName by remember { mutableStateOf("") }
+    var selectedService by remember { mutableStateOf("") }
 
     var price by remember { mutableStateOf("") }
     var priceShort by remember { mutableStateOf("") }
     var priceMedium by remember { mutableStateOf("") }
     var priceLong by remember { mutableStateOf("") }
 
-    // --- validation (Q3: show error + disable button) ---
     val isSinglePrice = singlePriceList.contains(selectedService)
 
     val isSinglePriceValid =
@@ -49,12 +54,12 @@ fun AddServiceScreen(
 
     val isLengthPriceValid =
         !isSinglePrice &&
-                priceShort.isNotBlank() && priceShort.toDoubleOrNull() != null &&
-                priceMedium.isNotBlank() && priceMedium.toDoubleOrNull() != null &&
-                priceLong.isNotBlank() && priceLong.toDoubleOrNull() != null
+                priceShort.toDoubleOrNull() != null &&
+                priceMedium.toDoubleOrNull() != null &&
+                priceLong.toDoubleOrNull() != null
 
     val isFormValid =
-        selectedCategory.isNotBlank() &&
+        selectedCategoryId != null &&
                 selectedService.isNotBlank() &&
                 (isSinglePriceValid || isLengthPriceValid)
 
@@ -67,36 +72,34 @@ fun AddServiceScreen(
                 .size(28.dp)
                 .clickable { onBack() }
         )
-        Spacer(Modifier.height(12.dp))
 
+        Spacer(Modifier.height(12.dp))
         Text("Add New Service", style = MaterialTheme.typography.headlineSmall)
         Spacer(Modifier.height(20.dp))
 
-        // ------------- CATEGORY DROPDOWN (can change anytime) -------------
+        // CATEGORY DROPDOWN
         ExposedDropdownMenuBox(
             expanded = categoryExpanded,
             onExpandedChange = { categoryExpanded = it }
         ) {
             TextField(
                 readOnly = true,
-                value = selectedCategory,
+                value = selectedCategoryName,
                 onValueChange = {},
                 label = { Text("Service Category") },
-                modifier = Modifier
-                    .menuAnchor()
-                    .fillMaxWidth()
+                modifier = Modifier.menuAnchor().fillMaxWidth()
             )
 
             ExposedDropdownMenu(
                 expanded = categoryExpanded,
                 onDismissRequest = { categoryExpanded = false }
             ) {
-                categories.forEach { cat ->
+                categories.forEach { (id, name) ->
                     DropdownMenuItem(
-                        text = { Text(cat) },
+                        text = { Text(name) },
                         onClick = {
-                            selectedCategory = cat
-                            // when category changes, allow user to pick service again
+                            selectedCategoryId = id
+                            selectedCategoryName = name
                             selectedService = ""
                             categoryExpanded = false
                         }
@@ -107,9 +110,8 @@ fun AddServiceScreen(
 
         Spacer(Modifier.height(16.dp))
 
-        if (selectedCategory.isNotEmpty()) {
-            // ------------- SERVICE NAME DROPDOWN (changeable before publish) -------------
-            val serviceList = servicesMap[selectedCategory] ?: emptyList()
+        if (selectedCategoryName.isNotEmpty()) {
+            val serviceList = servicesMap[selectedCategoryName] ?: emptyList()
 
             ExposedDropdownMenuBox(
                 expanded = serviceExpanded,
@@ -120,9 +122,7 @@ fun AddServiceScreen(
                     value = selectedService,
                     onValueChange = {},
                     label = { Text("Service Name") },
-                    modifier = Modifier
-                        .menuAnchor()
-                        .fillMaxWidth()
+                    modifier = Modifier.menuAnchor().fillMaxWidth()
                 )
 
                 ExposedDropdownMenu(
@@ -144,7 +144,6 @@ fun AddServiceScreen(
 
         Spacer(Modifier.height(20.dp))
 
-        // ---------------- PRICE INPUT SECTION ----------------
         if (selectedService.isNotEmpty()) {
 
             if (isSinglePrice) {
@@ -152,63 +151,45 @@ fun AddServiceScreen(
                     value = price,
                     onValueChange = { price = it },
                     label = { Text("Price (RM)") },
-                    isError = price.isNotBlank() && price.toDoubleOrNull() == null,
                     modifier = Modifier.fillMaxWidth()
                 )
-                if (price.isBlank()) {
-                    Text("Price is required", color = MaterialTheme.colorScheme.error)
-                } else if (price.toDoubleOrNull() == null) {
-                    Text("Enter a valid number", color = MaterialTheme.colorScheme.error)
-                }
             } else {
                 OutlinedTextField(
                     value = priceShort,
                     onValueChange = { priceShort = it },
                     label = { Text("Short (RM)") },
-                    isError = priceShort.isNotBlank() && priceShort.toDoubleOrNull() == null,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(10.dp))
-
+                Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = priceMedium,
                     onValueChange = { priceMedium = it },
                     label = { Text("Medium (RM)") },
-                    isError = priceMedium.isNotBlank() && priceMedium.toDoubleOrNull() == null,
                     modifier = Modifier.fillMaxWidth()
                 )
-                Spacer(Modifier.height(10.dp))
-
+                Spacer(Modifier.height(8.dp))
                 OutlinedTextField(
                     value = priceLong,
                     onValueChange = { priceLong = it },
                     label = { Text("Long (RM)") },
-                    isError = priceLong.isNotBlank() && priceLong.toDoubleOrNull() == null,
                     modifier = Modifier.fillMaxWidth()
                 )
-
-                if (!isLengthPriceValid) {
-                    Text(
-                        "All three prices are required and must be valid numbers",
-                        color = MaterialTheme.colorScheme.error
-                    )
-                }
             }
 
             Spacer(Modifier.height(20.dp))
 
             Button(
-                enabled = isFormValid,       // Q3: disable until valid
+                enabled = isFormValid,
                 onClick = {
-                    if (singlePriceList.contains(selectedService)) {
+                    if (isSinglePrice) {
                         viewModel.addSinglePriceService(
-                            category = selectedCategory,
+                            categoryId = selectedCategoryId!!,
                             name = selectedService,
                             price = price
                         )
                     } else {
                         viewModel.addLengthPriceService(
-                            category = selectedCategory,
+                            categoryId = selectedCategoryId!!,
                             name = selectedService,
                             short = priceShort,
                             medium = priceMedium,
