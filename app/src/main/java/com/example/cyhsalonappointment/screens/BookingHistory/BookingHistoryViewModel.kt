@@ -5,13 +5,15 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.*
 import com.example.cyhsalonappointment.local.DAO.AppointmentDao
 import com.example.cyhsalonappointment.local.DAO.ServiceDao
+import com.example.cyhsalonappointment.local.DAO.StylistDao
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 class BookingHistoryViewModel(
     private val appointmentDao: AppointmentDao,
-    private val serviceDao: ServiceDao
+    private val serviceDao: ServiceDao,
+    private val stylistDao: StylistDao
 ) : ViewModel() {
 
     private val _appointments = MutableLiveData<List<AppointmentDisplay>>()
@@ -35,13 +37,18 @@ class BookingHistoryViewModel(
                         else -> "Upcoming"
                     }
                     val service = serviceDao.getServiceById(appt.serviceId).first()
+                    val stylistName: String? = if (appt.stylistId != null) {
+                        val stylist = stylistDao.getStylistById(appt.stylistId)
+                        stylist?.stylistName
+                    } else null
+
                     AppointmentDisplay(
                         appointmentId = appt.appointmentId,
                         serviceName = service?.serviceName ?: "Unknown",
                         date = appt.appointmentDate,
                         timeSlotId = appt.timeSlotId,
                         status = statusText,
-                        stylistName = appt.stylistId,
+                        stylistName = stylistName,
                         hairLength = appt.hairLength,
                         price = appt.finalPrice
                     )

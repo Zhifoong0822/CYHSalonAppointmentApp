@@ -115,7 +115,7 @@ class MainActivity : ComponentActivity() {
             val reportRepo = ReportRepository(reportDao)
             val reportVM: ReportViewModel = viewModel(factory = ReportViewModelFactory(reportRepo))
             val bookingHistoryViewModel: BookingHistoryViewModel = viewModel(
-                factory = BookingHistoryViewModelFactory(appointmentDao,serviceDao)
+                factory = BookingHistoryViewModelFactory(appointmentDao,serviceDao, stylistDao)
             )
             val context = LocalContext.current
             val customerId by session.getUserId().collectAsState(initial = "")
