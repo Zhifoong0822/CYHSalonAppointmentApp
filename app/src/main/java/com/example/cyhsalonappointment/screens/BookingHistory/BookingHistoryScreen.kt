@@ -66,8 +66,16 @@ fun BookingHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isAdmin) "Admin Booking History" else "My Booking History") }
+                title = { Text(if (isAdmin) "Admin Booking History" else "My Booking History") },
+                navigationIcon = {
+                    if (isAdmin) {
+                        IconButton(onClick = { navController.popBackStack() }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    }
+                }
             )
+
         },
         bottomBar = { if (!isAdmin) BottomNavBar(navController) else {} }
     ) { padding ->
