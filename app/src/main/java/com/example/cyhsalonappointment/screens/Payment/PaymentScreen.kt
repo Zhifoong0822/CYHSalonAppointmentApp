@@ -44,7 +44,8 @@ fun PaymentScreen(
     serviceId: Int,
     bookingDate: String,
     bookingTime: String, // This is "Timeslot(timeslotId=TS0002, timeslot= 10:30)"
-    stylistId: String
+    stylistId: String,
+    customerId: String
 ) {
     var selectedPaymentMethod by remember { mutableStateOf<String?>(null) }
     val context = LocalContext.current
@@ -268,7 +269,7 @@ fun PaymentScreen(
                     bookingViewModel.createAppointment(
                         date = bookingDate,
                         timeSlotId = bookingTime,
-                        customerId = "C0001",
+                        customerId = customerId,
                         serviceId = serviceId,
                         stylistId = stylistId
                     )

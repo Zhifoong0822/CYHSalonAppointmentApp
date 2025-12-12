@@ -118,6 +118,7 @@ class MainActivity : ComponentActivity() {
                 factory = BookingHistoryViewModelFactory(appointmentDao,serviceDao)
             )
             val context = LocalContext.current
+            val customerId by session.getUserId().collectAsState(initial = "")
 
 
             NavHost(
@@ -294,18 +295,23 @@ class MainActivity : ComponentActivity() {
                     )
                 ) { backStackEntry ->
                     val isAdmin = backStackEntry.arguments?.getString("isAdmin") == "true"
-                    val status = backStackEntry.arguments?.getString("status") // <- this is the filter
+                    val status = backStackEntry.arguments?.getString("status") // filter
 
                     BookingHistoryScreen(
                         navController = navController,
                         viewModel = bookingHistoryViewModel,
+                        customerId = customerId ?:"",   // <-- pass it here
                         isAdmin = isAdmin,
                         selectedStatus = status,
                         onCancelClick = { appointment ->
-                            bookingHistoryViewModel.cancelBooking(appointment.appointmentId)
+                            bookingHistoryViewModel.cancelBooking(
+                                id = appointment.appointmentId,
+                                customerId = customerId  ?:""
+                            )
                         }
                     )
                 }
+
 
 
                 composable(
@@ -419,7 +425,8 @@ class MainActivity : ComponentActivity() {
                         stylistVM = stylistVM,
                         serviceId = serviceId,
                         selectedDate = date,
-                        selectedTimeSlot = slot
+                        selectedTimeSlot = slot,
+                        customerId = customerId ?: ""
                     )
                 }
 
@@ -430,7 +437,7 @@ class MainActivity : ComponentActivity() {
 
 // Payment main route
                 composable(
-                    route = "payment/{appointmentId}/{serviceName}/{servicePrice}/{serviceId}/{bookingDate}/{bookingTime}/{stylistId}",
+                    route = "payment/{appointmentId}/{serviceName}/{servicePrice}/{serviceId}/{bookingDate}/{bookingTime}/{stylistId}/{customerId}",
                     arguments = listOf(
                         navArgument("appointmentId") { type = NavType.StringType },
                         navArgument("serviceName") { type = NavType.StringType },
@@ -438,7 +445,9 @@ class MainActivity : ComponentActivity() {
                         navArgument("serviceId") { type = NavType.IntType },
                         navArgument("bookingDate") { type = NavType.StringType },
                         navArgument("bookingTime") { type = NavType.StringType },
-                        navArgument("stylistId") { type = NavType.StringType }
+                        navArgument("stylistId") { type = NavType.StringType },
+                        navArgument("customerId") { type = NavType.StringType }
+
                     )
                 ) { backStackEntry ->
                     val appointmentId = backStackEntry.arguments?.getString("appointmentId") ?: ""
@@ -448,7 +457,7 @@ class MainActivity : ComponentActivity() {
                     val bookingDate = backStackEntry.arguments?.getString("bookingDate") ?: ""
                     val bookingTime = backStackEntry.arguments?.getString("bookingTime") ?: ""
                     val stylistId = backStackEntry.arguments?.getString("stylistId") ?: ""
-
+                    val customerId = backStackEntry.arguments?.getString("customerId") ?: ""
 
                     PaymentScreen(
                         navController = navController,
@@ -459,6 +468,7 @@ class MainActivity : ComponentActivity() {
                         bookingDate = bookingDate,
                         bookingTime = bookingTime,
                         stylistId = stylistId,
+                        customerId = customerId
 
                     )
                 }

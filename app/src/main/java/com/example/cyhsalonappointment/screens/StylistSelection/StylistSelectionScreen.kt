@@ -38,7 +38,8 @@ fun StylistSelectionScreen(
     stylistVM: StylistSelectionViewModel,
     serviceId: Int,
     selectedDate: String,
-    selectedTimeSlot: String
+    selectedTimeSlot: String,
+    customerId: String
 ) {
     // load service from DB
     val service by stylistVM.getService(serviceId).collectAsState(initial = null)
@@ -176,8 +177,15 @@ fun StylistSelectionScreen(
                         val encodedServiceName = URLEncoder.encode(serviceNameFromDb, StandardCharsets.UTF_8.toString())
 
                         navController.navigate(
-                            "payment/$appointmentId/$encodedServiceName/${finalPrice.toFloat()}/$serviceId/" +
-                                    "$selectedDate/$selectedTimeSlot/$stylistId"
+                            "payment/" +
+                                    "$appointmentId/" +
+                                    "$encodedServiceName/" +
+                                    "${finalPrice.toFloat()}/" +
+                                    "$serviceId/" +
+                                    "$selectedDate/" +
+                                    "$selectedTimeSlot/" +   // now becomes timeSlotId
+                                    "$stylistId/" +
+                                    "$customerId"
                         )
 
                     },

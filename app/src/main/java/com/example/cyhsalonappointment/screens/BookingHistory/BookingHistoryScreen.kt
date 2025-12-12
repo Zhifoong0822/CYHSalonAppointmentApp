@@ -43,6 +43,7 @@ data class AppointmentDisplay(
 fun BookingHistoryScreen(
     navController: NavHostController,
     viewModel: BookingHistoryViewModel,
+    customerId: String,
     isAdmin: Boolean = false,
     selectedStatus: String? = null,
     onRescheduleClick: (AppointmentDisplay) -> Unit = {},
@@ -58,19 +59,14 @@ fun BookingHistoryScreen(
 
     // Load appointments once or whenever status changes
     LaunchedEffect(isAdmin, selectedStatus) {
-        viewModel.loadAppointments(isAdmin = isAdmin, status = selectedStatus)
+        viewModel.loadAppointments(isAdmin = isAdmin, status = selectedStatus, customerId = customerId)
     }
 
 
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (isAdmin) "Admin Booking History" else "My Booking History") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+                title = { Text(if (isAdmin) "Admin Booking History" else "My Booking History") }
             )
         },
         bottomBar = { if (!isAdmin) BottomNavBar(navController) else {} }
