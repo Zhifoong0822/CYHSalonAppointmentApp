@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -88,9 +89,9 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
 
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFFFEF9F3),
-            Color(0xFFF5F0EA),
-            Color(0xFFEFE8E0)
+            Color(0xFFF3E5F5),
+            Color(0xFFEDE7F6),
+            Color(0xFFE1BEE7)
         )
     )
 
@@ -118,16 +119,17 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                 .fillMaxSize()
                 .background(brush = gradientBackground)
                 .verticalScroll(scrollState)
-                .padding(horizontal = contentPadding)
+                .systemBarsPadding()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             //Back Button
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(top = 22.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = contentPadding, vertical = 16.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
                 IconButton(
@@ -139,19 +141,24 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                         }
                     },
                     modifier = Modifier
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(12.dp),
+                            ambientColor = Color(0x33000000),
+                            spotColor = Color(0x33000000)
+                        )
                         .background(Color.White, RoundedCornerShape(12.dp))
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color(0xFF446F5C),
+                        tint = Color(0xFF7B1FA2),
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -161,9 +168,9 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                     text = "Login",
                     fontSize = titleFontSize,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF446F5C),
+                    color = Color(0xFF6A1B9A),
                     textAlign = TextAlign.Center,
-                    letterSpacing = 0.5.sp
+                    letterSpacing = 1.25.sp
                 )
             }
 
@@ -172,10 +179,16 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(20.dp)),
-                shape = RoundedCornerShape(20.dp),
+                    .padding(horizontal = contentPadding)
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        ambientColor = Color(0x33000000),
+                        spotColor = Color(0x33000000)
+                    ),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -185,7 +198,11 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                     OutlinedTextField(
                         value = loginState.email,
                         onValueChange = viewModel::onLoginEmailChange,
-                        label = { Text("Email Address", fontWeight = FontWeight.Medium) },
+                        label = {
+                            Text("Email Address",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF7B1FA2))
+                        },
                         placeholder = { Text("Enter your email", color = Color(0xFF9CA3AF)) },
                         modifier = Modifier.fillMaxWidth(),
                         singleLine = true,
@@ -193,15 +210,16 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                             Icon(
                                 imageVector = Icons.Filled.Email,
                                 contentDescription = "Email",
-                                tint = Color(0xFF446F5C)
+                                tint = Color(0xFF7B1FA2)
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF446F5C),
-                            focusedLabelColor = Color(0xFF446F5C),
-                            cursorColor = Color(0xFF446F5C)
+                            focusedBorderColor = Color(0xFF7B1FA2),
+                            unfocusedBorderColor = Color(0xFFE1BEE7),
+                            focusedLabelColor = Color(0xFF7B1FA2),
+                            cursorColor = Color(0xFF7B1FA2)
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(16.dp)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -210,7 +228,11 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                     OutlinedTextField(
                         value = loginState.password,
                         onValueChange = viewModel::onLoginPasswordChange,
-                        label = { Text("Password", fontWeight = FontWeight.Medium) },
+                        label = {
+                            Text("Password",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF7B1FA2))
+                        },
                         placeholder = { Text("Enter your password", color = Color(0xFF9CA3AF)) },
                         modifier = Modifier.fillMaxWidth(),
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
@@ -221,7 +243,7 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                                 Icon(
                                     imageVector = image,
                                     contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                    tint = Color(0xFF6B7280)
+                                    tint = Color(0xFF7B1FA2)
                                 )
                             }
                         },
@@ -230,15 +252,16 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                             Icon(
                                 imageVector = Icons.Filled.Lock,
                                 contentDescription = "Password",
-                                tint = Color(0xFF446F5C)
+                                tint = Color(0xFF7B1FA2)
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF446F5C),
-                            focusedLabelColor = Color(0xFF446F5C),
-                            cursorColor = Color(0xFF446F5C)
+                            focusedBorderColor = Color(0xFF7B1FA2),
+                            unfocusedBorderColor = Color(0xFFE1BEE7),
+                            focusedLabelColor = Color(0xFF7B1FA2),
+                            cursorColor = Color(0xFF7B1FA2)
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(16.dp)
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -255,7 +278,7 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                                 textDecoration = TextDecoration.Underline
                             ),
                             fontWeight = FontWeight.Medium,
-                            color = Color(0xFF446F5C),
+                            color = Color.Blue,
                             modifier = Modifier.clickable { onForgotPasswordClicked() }
                         )
                     }
@@ -272,10 +295,10 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                                 loginState.email.isNotBlank() &&
                                 loginState.password.isNotBlank(),
                         colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = Color(0xFF446F5C),
+                            containerColor = Color(0xFF7B1FA2),
                             contentColor = Color.White,
-                            disabledContainerColor = Color(0xFFE5E7EB),
-                            disabledContentColor = Color(0xFF9CA3AF)
+                            disabledContainerColor = Color(0xFFE1BEE7),
+                            disabledContentColor = Color(0xFF9C27B0)
                         ),
                         elevation = ButtonDefaults.elevatedButtonElevation(
                             defaultElevation = 6.dp,
@@ -312,18 +335,19 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                         }
                     }
 
+                    // Error message card
                     loginState.errorMessage?.let { errorMessage ->
                         Spacer(modifier = Modifier.height(16.dp))
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFEE2E2)
+                                containerColor = Color(0xFFFCE4EC)
                             )
                         ) {
                             Text(
                                 text = errorMessage,
-                                color = Color(0xFFDC2626),
+                                color = Color(0xFFC2185B),
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
                                 modifier = Modifier.padding(12.dp),

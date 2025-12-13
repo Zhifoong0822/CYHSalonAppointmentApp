@@ -12,7 +12,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -59,7 +61,6 @@ fun LogoScreen(message: String = "",
     }
 
     val scrollState = rememberScrollState()
-    val topSpacing = 120.dp
     val logoSize = 270.dp
     val titleFontSize = 33.sp
     val subtitleFontSize = 17.sp
@@ -70,45 +71,50 @@ fun LogoScreen(message: String = "",
 
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFFFEF9F3),
-            Color(0xFFF5F0EA),
-            Color(0xFFEFE8E0)
+            Color(0xFFF3E5F5),
+            Color(0xFFEDE7F6),
+            Color(0xFFE1BEE7)
         )
     )
 
     Scaffold(
-        snackbarHost = { SnackbarHost(snackbarHostState) }
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+        modifier = Modifier.fillMaxSize()
     ) { innerPadding ->
 
         Box(
             modifier = Modifier
-                .padding(innerPadding)
                 .fillMaxSize()
+                .background(gradientBackground)
+                .systemBarsPadding()
         ) {
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .background(brush = gradientBackground)
                     .verticalScroll(scrollState)
-                    .padding(horizontal = contentPadding),
-                horizontalAlignment = Alignment.CenterHorizontally
+                    .padding(
+                        horizontal = contentPadding,
+                        vertical = 32.dp
+                    ),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
             ) {
 
-                Spacer(modifier = Modifier.height(topSpacing))
+                Spacer(modifier = Modifier.height(5.dp))
 
                 //Logo
                 Card(
                     modifier = Modifier
                         .size(logoSize)
                         .shadow(
-                            elevation = 8.dp,
-                            shape = RoundedCornerShape(20.dp),
-                            ambientColor = Color(0x1A446F5C),
-                            spotColor = Color(0x1A446F5C)
+                            elevation = 12.dp,
+                            shape = RoundedCornerShape(24.dp),
+                            ambientColor = Color(0x33000000),
+                            spotColor = Color(0x33000000)
                         ),
-                    shape = RoundedCornerShape(20.dp),
+                    shape = RoundedCornerShape(24.dp),
                     colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                    elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
                 ) {
                     Image(
                         painter = painterResource(R.drawable.salon_logo),
@@ -125,7 +131,7 @@ fun LogoScreen(message: String = "",
                     text = "Welcome to",
                     fontSize = subtitleFontSize,
                     fontWeight = FontWeight.Medium,
-                    color = Color(0xFF6B7280),
+                    color = Color(0xFF7B1FA2),
                     textAlign = TextAlign.Center
                 )
 
@@ -135,7 +141,7 @@ fun LogoScreen(message: String = "",
                     text = "CYH Salon",
                     fontSize = titleFontSize,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF446F5C),
+                    color = Color(0xFF6A1B9A),
                     textAlign = TextAlign.Center,
                     letterSpacing = 1.25.sp
                 )
@@ -146,7 +152,7 @@ fun LogoScreen(message: String = "",
                     text = "Your perfect salon awaits",
                     fontSize = subtitleFontSize,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF9CA3AF),
+                    color = Color(0xFF9C27B0),
                     textAlign = TextAlign.Center
                 )
 
@@ -159,7 +165,7 @@ fun LogoScreen(message: String = "",
                         .fillMaxWidth()
                         .height(buttonHeight),
                     colors = ButtonDefaults.elevatedButtonColors(
-                        containerColor = Color(0xFF446F5C),
+                        containerColor = Color(0xFF7B1FA2),
                         contentColor = Color.White
                     ),
                     elevation = ButtonDefaults.elevatedButtonElevation(
@@ -186,7 +192,7 @@ fun LogoScreen(message: String = "",
                         .height(buttonHeight),
                     colors = ButtonDefaults.outlinedButtonColors(
                         containerColor = Color.Transparent,
-                        contentColor = Color(0xFF446F5C)
+                        contentColor = Color(0xFF7B1FA2)
                     ),
                     border = ButtonDefaults.outlinedButtonBorder.copy(
                         width = 2.dp
@@ -201,16 +207,40 @@ fun LogoScreen(message: String = "",
                     )
                 }
             }
-            Icon(
-                imageVector = Icons.Default.AdminPanelSettings,
-                contentDescription = "Staff Login",
-                tint = Color(0xFF446F5C),
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
-                    .align(Alignment.TopEnd) // now aligned to top-right of Box
+                    .align(Alignment.TopEnd)
                     .padding(16.dp)
-                    .size(36.dp)
                     .clickable { onAdminLoginButtonClicked() }
-            )
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(60.dp)
+                        .background(color = Color(0xFF7B1FA2), shape = CircleShape)
+                ) {
+                    // Wrap Icon in a Box with padding to counter internal padding
+                    Box(
+                        contentAlignment = Alignment.Center,
+                        modifier = Modifier.fillMaxSize(0.75f)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.AdminPanelSettings,
+                            contentDescription = "Admin Login",
+                            tint = Color.White,
+                            modifier = Modifier.fillMaxSize()
+                        )
+                    }
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Text(
+                    text = "Admin",
+                    color = Color(0xFF7B1FA2),
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
         }
     }
 }

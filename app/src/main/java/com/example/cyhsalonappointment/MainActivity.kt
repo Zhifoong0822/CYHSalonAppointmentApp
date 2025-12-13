@@ -7,17 +7,30 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -123,8 +136,11 @@ class MainActivity : ComponentActivity() {
 
             NavHost(
                 navController = navController,
-                startDestination = "logo"
+                startDestination = "splash"
             ) {
+                composable("splash") {
+                    SplashScreen(navController, customerViewModel)
+                }
 
                 composable(
                     route = "logo?message={message}",
@@ -254,27 +270,18 @@ class MainActivity : ComponentActivity() {
 
                 composable("profile") {
                     val userEmail by session.getUserEmail().collectAsState(initial = "")
-                    if (userEmail.isNotEmpty()) {
-                        ProfileScreen(
-                            customerEmail = userEmail,
-                            navController = navController,
-                            viewModel = customerViewModel,
-                            onEditProfileClicked = { navController.navigate("edit_profile") },
-                            onLogoutClicked = {
-                                navController.navigate("logo") {
-                                    popUpTo("services") { inclusive = true }
-                                }
+                    ProfileScreen(
+                        customerEmail = userEmail,
+                        navController = navController,
+                        viewModel = customerViewModel,
+                        onEditProfileClicked = { navController.navigate("edit_profile") },
+                        onLogoutClicked = {
+                            navController.navigate("logo") {
+                                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                                launchSingleTop = true
                             }
-                        )
-                    } else {
-                        // Show a simple loading spinner while userId is being loaded
-                        Box(
-                            modifier = Modifier.fillMaxSize(),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            androidx.compose.material3.CircularProgressIndicator()
                         }
-                    }
+                    )
                 }
 
                 composable("edit_profile"){
@@ -556,3 +563,53 @@ class MainActivity : ComponentActivity() {
 
     }
 
+@Composable
+fun SplashScreen(navController: NavHostController, customerViewModel: CustomerViewModel) {
+    val uiState by customerViewModel.uiState.collectAsState()
+
+    // React to login status after auth checking
+    LaunchedEffect(uiState.isAuthChecking, uiState.isLoggedIn) {
+        if (!uiState.isAuthChecking) {
+            if (uiState.isLoggedIn) {
+                navController.navigate("services") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    launchSingleTop = true
+                }
+            } else {
+                navController.navigate("logo") {
+                    popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                    launchSingleTop = true
+                }
+            }
+        }
+    }
+
+    // Splash UI
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(color = Color(0xFF6A1B9A)),
+        contentAlignment = Alignment.Center
+    ) {
+
+        Card(
+            modifier = Modifier
+                .size(250.dp)
+                .shadow(
+                    elevation = 8.dp,
+                    shape = RoundedCornerShape(20.dp)
+                ),
+            shape = RoundedCornerShape(20.dp),
+            colors = CardDefaults.cardColors(containerColor = Color.White),
+            elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+        ) {
+            Image(
+                painter = painterResource(id = R.drawable.salon_logo),
+                contentDescription = "App Logo",
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(16.dp)
+            )
+        }
+    }
+}

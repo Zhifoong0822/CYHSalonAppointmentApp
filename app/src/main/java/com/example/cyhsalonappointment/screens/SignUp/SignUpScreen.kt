@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -99,9 +100,9 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
 
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFFFEF9F3),
-            Color(0xFFF5F0EA),
-            Color(0xFFEFE8E0)
+            Color(0xFFF3E5F5),
+            Color(0xFFEDE7F6),
+            Color(0xFFE1BEE7)
         )
     )
 
@@ -131,16 +132,17 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                 .fillMaxSize()
                 .background(brush = gradientBackground)
                 .verticalScroll(scrollState)
-                .padding(horizontal = contentPadding)
+                .systemBarsPadding()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(5.dp))
 
             //Back Button
             Row(
-                modifier = Modifier.fillMaxWidth()
-                    .padding(top = 22.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = contentPadding),
                 horizontalArrangement = Arrangement.Start
             ) {
                 IconButton(
@@ -152,19 +154,24 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                         }
                     },
                     modifier = Modifier
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(12.dp),
+                            ambientColor = Color(0x33000000),
+                            spotColor = Color(0x33000000)
+                        )
                         .background(Color.White, RoundedCornerShape(12.dp))
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color(0xFF446F5C),
+                        tint = Color(0xFF7B1FA2),
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -174,24 +181,30 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                     text = "Sign Up",
                     fontSize = titleFontSize,
                     fontWeight = FontWeight.ExtraBold,
-                    color = Color(0xFF446F5C),
+                    color = Color(0xFF6A1B9A),
                     textAlign = TextAlign.Center,
-                    letterSpacing = 0.5.sp
+                    letterSpacing = 1.25.sp
                 )
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(20.dp)),
-                shape = RoundedCornerShape(20.dp),
+                    .padding(horizontal = contentPadding)
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        ambientColor = Color(0x33000000),
+                        spotColor = Color(0x33000000)
+                    ),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
                 Column(
-                    modifier = Modifier.padding(24.dp),
+                    modifier = Modifier.padding(20.dp),
                     verticalArrangement = Arrangement.spacedBy(20.dp)
                 ) {
                     //Username
@@ -199,7 +212,9 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                         OutlinedTextField(
                             value = signUpState.username,
                             onValueChange = viewModel::onSignUpUsernameChange,
-                            label = { Text("Username", fontWeight = FontWeight.Medium) },
+                            label = { Text("Username",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF7B1FA2)) },
                             placeholder = {
                                 Text(
                                     "Enter your username",
@@ -210,23 +225,24 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                                 Icon(
                                     imageVector = Icons.Filled.Person,
                                     contentDescription = "Username",
-                                    tint = Color(0xFF446F5C)
+                                    tint = Color(0xFF7B1FA2)
                                 )
                             },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF446F5C),
-                                focusedLabelColor = Color(0xFF446F5C),
-                                cursorColor = Color(0xFF446F5C),
+                                focusedBorderColor = Color(0xFF7B1FA2),
+                                unfocusedBorderColor = Color(0xFFE1BEE7),
+                                focusedLabelColor = Color(0xFF7B1FA2),
+                                cursorColor = Color(0xFF7B1FA2),
                                 errorBorderColor = Color(0xFFDC2626)
                             ),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth(),
                             isError = !signUpState.usernameError.isNullOrEmpty()
                         )
                         if (!signUpState.usernameError.isNullOrEmpty()) {
                             Text(
                                 text = signUpState.usernameError!!,
-                                color = Color(0xFFDC2626),
+                                color = Color(0xFFC2185B),
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                             )
@@ -242,21 +258,24 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                             value = signUpState.gender,
                             onValueChange = {},
                             readOnly = true,
-                            label = { Text("Gender", fontWeight = FontWeight.Medium) },
+                            label = { Text("Gender",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF7B1FA2)) },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Wc,
                                     contentDescription = "Gender",
-                                    tint = Color(0xFF446F5C)
+                                    tint = Color(0xFF7B1FA2)
                                 )
                             },
                             trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = genderExpanded) },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF446F5C),
-                                focusedLabelColor = Color(0xFF446F5C),
-                                cursorColor = Color(0xFF446F5C)
+                                focusedBorderColor = Color(0xFF7B1FA2),
+                                unfocusedBorderColor = Color(0xFFE1BEE7),
+                                focusedLabelColor = Color(0xFF7B1FA2),
+                                cursorColor = Color(0xFF7B1FA2)
                             ),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier
                                 .menuAnchor()
                                 .fillMaxWidth()
@@ -282,7 +301,9 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                     OutlinedTextField(
                         value = signUpState.contactNumber,
                         onValueChange = { viewModel.onSignUpContactChange(it) }, // update ViewModel
-                        label = { Text("Contact Number", fontWeight = FontWeight.Medium) },
+                        label = { Text("Contact Number",
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF7B1FA2)) },
                         placeholder = {
                             Text(
                                 "Enter your contact number",
@@ -293,15 +314,16 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                             Icon(
                                 imageVector = Icons.Filled.ContactPhone,
                                 contentDescription = "Contact Number",
-                                tint = Color(0xFF446F5C)
+                                tint = Color(0xFF7B1FA2)
                             )
                         },
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF446F5C),
-                            focusedLabelColor = Color(0xFF446F5C),
-                            cursorColor = Color(0xFF446F5C)
+                            focusedBorderColor = Color(0xFF7B1FA2),
+                            unfocusedBorderColor = Color(0xFFE1BEE7),
+                            focusedLabelColor = Color(0xFF7B1FA2),
+                            cursorColor = Color(0xFF7B1FA2)
                         ),
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth()
                     )
 
@@ -310,29 +332,32 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                         OutlinedTextField(
                             value = signUpState.email,
                             onValueChange = viewModel::onSignUpEmailChange,
-                            label = { Text("Email Address", fontWeight = FontWeight.Medium) },
+                            label = { Text("Email Address",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF7B1FA2)) },
                             placeholder = { Text("Enter your email", color = Color(0xFF9CA3AF)) },
                             leadingIcon = {
                                 Icon(
                                     imageVector = Icons.Filled.Email,
                                     contentDescription = "Email",
-                                    tint = Color(0xFF446F5C)
+                                    tint = Color(0xFF7B1FA2)
                                 )
                             },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF446F5C),
-                                focusedLabelColor = Color(0xFF446F5C),
-                                cursorColor = Color(0xFF446F5C),
+                                focusedBorderColor = Color(0xFF7B1FA2),
+                                unfocusedBorderColor = Color(0xFFE1BEE7),
+                                focusedLabelColor = Color(0xFF7B1FA2),
+                                cursorColor = Color(0xFF7B1FA2),
                                 errorBorderColor = Color(0xFFDC2626)
                             ),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth(),
                             isError = signUpState.emailError != null
                         )
                         if (signUpState.emailError != null) {
                             Text(
                                 text = signUpState.emailError!!,
-                                color = Color(0xFFDC2626),
+                                color = Color(0xFFC2185B),
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                             )
@@ -344,7 +369,9 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                         OutlinedTextField(
                             value = signUpState.password,
                             onValueChange = viewModel::onSignUpPasswordChange,
-                            label = { Text("Password", fontWeight = FontWeight.Medium) },
+                            label = { Text("Password",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF7B1FA2)) },
                             placeholder = {
                                 Text(
                                     "Enter your password",
@@ -355,7 +382,7 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                                 Icon(
                                     imageVector = Icons.Filled.Lock,
                                     contentDescription = "Password",
-                                    tint = Color(0xFF446F5C)
+                                    tint = Color(0xFF7B1FA2)
                                 )
                             },
                             trailingIcon = {
@@ -365,25 +392,26 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                                     Icon(
                                         imageVector = image,
                                         contentDescription = if (passwordVisible) "Hide password" else "Show password",
-                                        tint = Color(0xFF6B7280)
+                                        tint = Color(0xFF7B1FA2)
                                     )
                                 }
                             },
                             visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF446F5C),
-                                focusedLabelColor = Color(0xFF446F5C),
-                                cursorColor = Color(0xFF446F5C),
+                                focusedBorderColor = Color(0xFF7B1FA2),
+                                unfocusedBorderColor = Color(0xFFE1BEE7),
+                                focusedLabelColor = Color(0xFF7B1FA2),
+                                cursorColor = Color(0xFF7B1FA2),
                                 errorBorderColor = Color(0xFFDC2626)
                             ),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth(),
                             isError = signUpState.passwordError != null
                         )
                         if (signUpState.passwordError != null) {
                             Text(
                                 text = signUpState.passwordError!!,
-                                color = Color(0xFFDC2626),
+                                color = Color(0xFFC2185B),
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                             )
@@ -395,7 +423,9 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                         OutlinedTextField(
                             value = signUpState.confirmPassword,
                             onValueChange = viewModel::onSignUpConfirmPasswordChange,
-                            label = { Text("Confirm Password", fontWeight = FontWeight.Medium) },
+                            label = { Text("Confirm Password",
+                                fontWeight = FontWeight.Medium,
+                                color = Color(0xFF7B1FA2)) },
                             placeholder = {
                                 Text(
                                     "Confirm your password",
@@ -406,7 +436,7 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                                 Icon(
                                     imageVector = Icons.Filled.Lock,
                                     contentDescription = "Confirm Password",
-                                    tint = Color(0xFF446F5C)
+                                    tint = Color(0xFF7B1FA2)
                                 )
                             },
                             trailingIcon = {
@@ -418,25 +448,26 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                                     Icon(
                                         imageVector = image,
                                         contentDescription = if (confirmPasswordVisible) "Hide password" else "Show password",
-                                        tint = Color(0xFF6B7280)
+                                        tint = Color(0xFF7B1FA2)
                                     )
                                 }
                             },
                             visualTransformation = if (confirmPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color(0xFF446F5C),
-                                focusedLabelColor = Color(0xFF446F5C),
-                                cursorColor = Color(0xFF446F5C),
+                                focusedBorderColor = Color(0xFF7B1FA2),
+                                unfocusedBorderColor = Color(0xFFE1BEE7),
+                                focusedLabelColor = Color(0xFF7B1FA2),
+                                cursorColor = Color(0xFF7B1FA2),
                                 errorBorderColor = Color(0xFFDC2626)
                             ),
-                            shape = RoundedCornerShape(12.dp),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth(),
                             isError = !signUpState.confirmPasswordError.isNullOrEmpty()
                         )
                         if (!signUpState.confirmPasswordError.isNullOrEmpty()) {
                             Text(
                                 text = signUpState.confirmPasswordError!!,
-                                color = Color(0xFFDC2626),
+                                color = Color(0xFFC2185B),
                                 fontSize = 12.sp,
                                 modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                             )
@@ -456,7 +487,6 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                             val gender = signUpState.gender
                             val birthdate = signUpState.birthdate
 
-                            // Validation
                             when {
                                 username.isBlank() -> {
                                     viewModel.onSignUpUsernameChange(username) // triggers error
@@ -499,8 +529,10 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                             .height(buttonHeight),
                         enabled = !signUpState.isLoading,
                         colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = Color(0xFF446F5C),
-                            contentColor = Color.White
+                            containerColor = Color(0xFF7B1FA2),
+                            contentColor = Color.White,
+                            disabledContainerColor = Color(0xFFE1BEE7),
+                            disabledContentColor = Color(0xFF9C27B0)
                         ),
                         shape = RoundedCornerShape(16.dp)
                     ) {
@@ -520,14 +552,14 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                     signUpState.errorMessage?.let { errorMessage ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(8.dp),
+                            shape = RoundedCornerShape(12.dp),
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFEE2E2)
+                                containerColor = Color(0xFFFCE4EC)
                             )
                         ) {
                             Text(
                                 text = errorMessage,
-                                color = Color(0xFFDC2626),
+                                color = Color(0xFFC2185B),
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
                                 modifier = Modifier.padding(12.dp),

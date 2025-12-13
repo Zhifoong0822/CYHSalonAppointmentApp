@@ -7,12 +7,14 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -73,59 +75,67 @@ fun ForgotPasswordScreen(
             .background(
                 brush = Brush.verticalGradient(
                     colors = listOf(
-                        Color(0xFFFEF9F3),
-                        Color(0xFFF8F4EE),
-                        Color(0xFFF1EDE6)
+                        Color(0xFFF3E5F5),
+                        Color(0xFFEDE7F6),
+                        Color(0xFFE1BEE7)
                     )
                 )
             )
             .fillMaxSize()
+            .systemBarsPadding()
     ) {
         Column(
             modifier = Modifier.fillMaxSize()
         ) {
 
             //Back Button
-            OutlinedButton(
-                onClick = { onBackButtonClicked() },
+            Row(
                 modifier = Modifier
-                    .padding(top = 60.dp, start = 20.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = Color.White,
-                    contentColor = Color(0xFF2D5A4A)
-                ),
-                border = BorderStroke(1.5.dp, Color(0xFF2D5A4A)),
-                elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 2.dp)
+                    .fillMaxWidth()
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
+                horizontalArrangement = Arrangement.Start
             ) {
-                Icon(
-                    imageVector = Icons.Default.ArrowBack,
-                    contentDescription = "Back",
-                    tint = Color(0xFF2D5A4A),
-                    modifier = Modifier.size(24.dp)
-                )
+                androidx.compose.material3.IconButton(
+                    onClick = { onBackButtonClicked() },
+                    modifier = Modifier
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(12.dp),
+                            ambientColor = Color(0x33000000),
+                            spotColor = Color(0x33000000)
+                        )
+                        .background(Color.White, RoundedCornerShape(12.dp))
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color(0xFF7B1FA2),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             ElevatedCard(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 20.dp)
+                    .padding(horizontal = 24.dp)
                     .shadow(
                         elevation = 12.dp,
                         shape = RoundedCornerShape(24.dp),
-                        ambientColor = Color(0xFF2D5A4A).copy(alpha = 0.1f)
+                        ambientColor = Color(0x33000000),
+                        spotColor = Color(0x33000000)
                     ),
                 shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.elevatedCardColors(
                     containerColor = Color.White
                 ),
-                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.elevatedCardElevation(defaultElevation = 12.dp)
             ) {
                 Column(
                     modifier = Modifier
-                        .padding(32.dp)
+                        .padding(24.dp)
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -136,8 +146,8 @@ fun ForgotPasswordScreen(
                             .background(
                                 brush = Brush.radialGradient(
                                     colors = listOf(
-                                        Color(0xFF4CAF50).copy(alpha = 0.1f),
-                                        Color(0xFF2D5A4A).copy(alpha = 0.05f)
+                                        Color(0xFF7B1FA2).copy(alpha = 0.1f),
+                                        Color(0xFFE1BEE7).copy(alpha = 0.05f)
                                     )
                                 ),
                                 shape = RoundedCornerShape(20.dp)
@@ -147,7 +157,7 @@ fun ForgotPasswordScreen(
                         Icon(
                             imageVector = Icons.Default.Email,
                             contentDescription = "Email",
-                            tint = Color(0xFF4CAF50),
+                            tint = Color(0xFF7B1FA2),
                             modifier = Modifier.size(36.dp)
                         )
                     }
@@ -158,8 +168,9 @@ fun ForgotPasswordScreen(
                         text = "Reset Password",
                         fontSize = 28.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color(0xFF2D5A4A),
-                        textAlign = TextAlign.Center
+                        color = Color(0xFF6A1B9A),
+                        textAlign = TextAlign.Center,
+                        letterSpacing = 1.25.sp
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
@@ -168,7 +179,7 @@ fun ForgotPasswordScreen(
                         text = "Enter your email address and we'll send you a link to reset your password.",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Medium,
-                        color = Color(0xFF666666),
+                        color = Color(0xFF7B1FA2),
                         textAlign = TextAlign.Center,
                         lineHeight = 22.sp,
                         modifier = Modifier.fillMaxWidth()
@@ -184,32 +195,32 @@ fun ForgotPasswordScreen(
                             Text(
                                 text = "Email",
                                 fontWeight = FontWeight.SemiBold,
-                                color = Color(0xFF2D5A4A)
+                                color = Color(0xFF7B1FA2)
                             )
                         },
                         placeholder = {
                             Text(
                                 text = "Enter your email",
                                 fontWeight = FontWeight.Medium,
-                                color = Color(0xFF999999)
+                                color = Color(0xFF9CA3AF)
                             )
                         },
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Email,
                                 contentDescription = "Email",
-                                tint = Color(0xFF4CAF50),
+                                tint = Color(0xFF7B1FA2),
                                 modifier = Modifier.size(20.dp)
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = !resetPasswordState.isLoading,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(16.dp),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF4CAF50),
-                            unfocusedBorderColor = Color(0xFFCCCCCC),
-                            focusedLabelColor = Color(0xFF4CAF50),
-                            cursorColor = Color(0xFF4CAF50)
+                            focusedBorderColor = Color(0xFF7B1FA2),
+                            unfocusedBorderColor = Color(0xFFE1BEE7),
+                            focusedLabelColor = Color(0xFF7B1FA2),
+                            cursorColor = Color(0xFF7B1FA2)
                         )
                     )
 
@@ -222,18 +233,18 @@ fun ForgotPasswordScreen(
                         },
                         enabled = email.isNotBlank() && !resetPasswordState.isLoading,
                         colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = Color(0xFF4CAF50),
-                            contentColor = Color.White,
-                            disabledContainerColor = Color(0xFFCCCCCC),
-                            disabledContentColor = Color.White
+                            containerColor = if (email.isNotBlank()) Color(0xFF7B1FA2) else Color(0xFFE1BEE7),
+                            contentColor = if (email.isNotBlank()) Color.White else Color(0xFF9C27B0),
+                            disabledContainerColor = Color(0xFFE1BEE7),
+                            disabledContentColor = Color(0xFF9C27B0)
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(56.dp),
-                        shape = RoundedCornerShape(12.dp),
+                            .height(52.dp),
+                        shape = RoundedCornerShape(16.dp),
                         elevation = ButtonDefaults.elevatedButtonElevation(
-                            defaultElevation = 4.dp,
-                            pressedElevation = 8.dp
+                            defaultElevation = 6.dp,
+                            pressedElevation = 2.dp
                         )
                     ) {
                         Text(
@@ -250,14 +261,14 @@ fun ForgotPasswordScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    Color(0xFFFFEBEE),
-                                    RoundedCornerShape(8.dp)
+                                    Color(0xFFFCE4EC),
+                                    RoundedCornerShape(12.dp)
                                 )
                                 .padding(12.dp)
                         ) {
                             Text(
                                 text = errorMsg,
-                                color = Color(0xFFD32F2F),
+                                color = Color(0xFFC2185B),
                                 fontWeight = FontWeight.Medium,
                                 fontSize = 14.sp,
                                 textAlign = TextAlign.Center,
@@ -273,8 +284,8 @@ fun ForgotPasswordScreen(
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .background(
-                                    Color(0xFFE8F5E8),
-                                    RoundedCornerShape(8.dp)
+                                    Color(0xFFF3E5F5),
+                                    RoundedCornerShape(12.dp)
                                 )
                                 .padding(16.dp)
                         ) {
@@ -285,13 +296,13 @@ fun ForgotPasswordScreen(
                                 Icon(
                                     imageVector = Icons.Default.Email,
                                     contentDescription = "Success",
-                                    tint = Color(0xFF4CAF50),
+                                    tint = Color(0xFF7B1FA2),
                                     modifier = Modifier.size(24.dp)
                                 )
                                 Spacer(modifier = Modifier.height(8.dp))
                                 Text(
                                     text = successMsg,
-                                    color = Color(0xFF2E7D32),
+                                    color = Color(0xFF7B1FA2),
                                     fontWeight = FontWeight.SemiBold,
                                     fontSize = 14.sp,
                                     textAlign = TextAlign.Center,

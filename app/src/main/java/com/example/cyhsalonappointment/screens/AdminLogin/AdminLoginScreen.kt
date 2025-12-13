@@ -44,9 +44,9 @@ fun AdminLoginScreen(
 
     val gradientBackground = Brush.verticalGradient(
         colors = listOf(
-            Color(0xFFFEF9F3),
-            Color(0xFFF5F0EA),
-            Color(0xFFEFE8E0)
+            Color(0xFFF3E5F5),
+            Color(0xFFEDE7F6),
+            Color(0xFFE1BEE7)
         )
     )
 
@@ -66,45 +66,50 @@ fun AdminLoginScreen(
                 .fillMaxSize()
                 .background(gradientBackground)
                 .verticalScroll(scrollState)
-                .padding(horizontal = 24.dp)
+                .systemBarsPadding()
                 .padding(innerPadding),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
 
-            Spacer(modifier = Modifier.height(20.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Back Button
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 22.dp),
+                    .padding(horizontal = 24.dp, vertical = 16.dp),
                 horizontalArrangement = Arrangement.Start
             ) {
                 IconButton(
                     onClick = onBackButtonClicked,
                     modifier = Modifier
-                        .shadow(4.dp, RoundedCornerShape(12.dp))
+                        .shadow(
+                            elevation = 6.dp,
+                            shape = RoundedCornerShape(12.dp),
+                            ambientColor = Color(0x33000000),
+                            spotColor = Color(0x33000000)
+                        )
                         .background(Color.White, RoundedCornerShape(12.dp))
                 ) {
                     Icon(
                         imageVector = Icons.Default.ArrowBack,
                         contentDescription = "Back",
-                        tint = Color(0xFF446F5C),
+                        tint = Color(0xFF7B1FA2),
                         modifier = Modifier.size(24.dp)
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.height(32.dp))
 
             // Title
             Text(
                 text = "Admin Login",
                 fontSize = 33.sp,
                 fontWeight = FontWeight.ExtraBold,
-                color = Color(0xFF446F5C),
+                color = Color(0xFF6A1B9A),
                 textAlign = TextAlign.Center,
-                letterSpacing = 0.5.sp
+                letterSpacing = 1.25.sp
             )
 
             Spacer(modifier = Modifier.height(48.dp))
@@ -113,10 +118,16 @@ fun AdminLoginScreen(
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .shadow(8.dp, RoundedCornerShape(20.dp)),
-                shape = RoundedCornerShape(20.dp),
+                    .padding(horizontal = 24.dp)
+                    .shadow(
+                        elevation = 12.dp,
+                        shape = RoundedCornerShape(24.dp),
+                        ambientColor = Color(0x33000000),
+                        spotColor = Color(0x33000000)
+                    ),
+                shape = RoundedCornerShape(24.dp),
                 colors = CardDefaults.cardColors(containerColor = Color.White),
-                elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
+                elevation = CardDefaults.cardElevation(defaultElevation = 12.dp)
             ) {
                 Column(
                     modifier = Modifier.padding(24.dp),
@@ -126,23 +137,26 @@ fun AdminLoginScreen(
                     OutlinedTextField(
                         value = loginState.adminId,
                         onValueChange = { viewModel.onAdminIdChange(it) },
-                        label = { Text("Admin ID", fontWeight = FontWeight.Medium) },
+                        label = { Text("Admin ID",
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF7B1FA2)) },
                         placeholder = { Text("Enter your admin ID", color = Color(0xFF9CA3AF)) },
                         singleLine = true,
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Person,
                                 contentDescription = "Admin ID",
-                                tint = Color(0xFF446F5C)
+                                tint = Color(0xFF7B1FA2)
                             )
                         },
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF446F5C),
-                            focusedLabelColor = Color(0xFF446F5C),
-                            cursorColor = Color(0xFF446F5C)
+                            focusedBorderColor = Color(0xFF7B1FA2),
+                            unfocusedBorderColor = Color(0xFFE1BEE7),
+                            focusedLabelColor = Color(0xFF7B1FA2),
+                            cursorColor = Color(0xFF7B1FA2)
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(16.dp)
                     )
 
                     Spacer(modifier = Modifier.height(20.dp))
@@ -151,14 +165,16 @@ fun AdminLoginScreen(
                     OutlinedTextField(
                         value = loginState.password,
                         onValueChange = { viewModel.onPasswordChange(it) },
-                        label = { Text("Password", fontWeight = FontWeight.Medium) },
+                        label = { Text("Password",
+                            fontWeight = FontWeight.Medium,
+                            color = Color(0xFF7B1FA2)) },
                         placeholder = { Text("Enter your password", color = Color(0xFF9CA3AF)) },
                         singleLine = true,
                         leadingIcon = {
                             Icon(
                                 imageVector = Icons.Default.Lock,
                                 contentDescription = "Password",
-                                tint = Color(0xFF446F5C)
+                                tint = Color(0xFF7B1FA2)
                             )
                         },
                         trailingIcon = {
@@ -168,18 +184,19 @@ fun AdminLoginScreen(
                                 Icon(
                                     imageVector = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff,
                                     contentDescription = null,
-                                    tint = Color(0xFF6B7280)
+                                    tint = Color(0xFF7B1FA2)
                                 )
                             }
                         },
                         visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
                         colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF446F5C),
-                            focusedLabelColor = Color(0xFF446F5C),
-                            cursorColor = Color(0xFF446F5C)
+                            focusedBorderColor = Color(0xFF7B1FA2),
+                            unfocusedBorderColor = Color(0xFFE1BEE7),
+                            focusedLabelColor = Color(0xFF7B1FA2),
+                            cursorColor = Color(0xFF7B1FA2)
                         ),
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(16.dp)
                     )
 
                     Spacer(modifier = Modifier.height(33.dp))
@@ -192,8 +209,10 @@ fun AdminLoginScreen(
                             .fillMaxWidth()
                             .height(52.dp),
                         colors = ButtonDefaults.elevatedButtonColors(
-                            containerColor = Color(0xFF446F5C),
-                            contentColor = Color.White
+                            containerColor = Color(0xFF7B1FA2),
+                            contentColor = Color.White,
+                            disabledContainerColor = Color(0xFFE1BEE7),
+                            disabledContentColor = Color(0xFF9C27B0)
                         ),
                         shape = RoundedCornerShape(16.dp),
                         elevation = ButtonDefaults.elevatedButtonElevation(defaultElevation = 6.dp)

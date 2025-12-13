@@ -1,5 +1,6 @@
 package com.example.cyhsalonappointment.screens.Profile
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -11,6 +12,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Visibility
+import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -19,6 +22,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
@@ -39,14 +44,44 @@ fun ProfileScreen(
     val uiState = viewModel.uiState.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
     val editProfileState = viewModel.editProfileState.collectAsState()
+    val deleteAccountState = viewModel.deleteAccountState.collectAsState()
 
+    var passwordVisible by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
     var passwordInput by remember { mutableStateOf("") }
+    var passwordError by remember { mutableStateOf<String?>(null) }
 
     // Load profile
     LaunchedEffect(customerEmail) {
         if (customerEmail.isNotEmpty()) {
             viewModel.loadLocalUserProfile(customerEmail)
+        }
+    }
+
+    LaunchedEffect(deleteAccountState.value) {
+        Log.d("ProfileScreen", "DeleteAccountState changed: ${deleteAccountState.value}")
+    }
+
+    LaunchedEffect(deleteAccountState.value.successMessage) {
+        deleteAccountState.value.successMessage?.let {
+            showDeleteDialog = false
+            passwordInput = ""
+            passwordError = null
+
+            viewModel.clearDeleteAccountMessages()
+
+            navController.navigate("logo") {
+                popUpTo(navController.graph.startDestinationId) { inclusive = true }
+                launchSingleTop = true
+            }
+        }
+    }
+
+    LaunchedEffect(deleteAccountState.value.errorMessage) {
+        Log.d("ProfileScreen", "Error message LaunchedEffect triggered: ${deleteAccountState.value.errorMessage}")
+        deleteAccountState.value.errorMessage?.let { error ->
+            Log.d("ProfileScreen", "Setting password error: $error")
+            passwordError = error
         }
     }
 
@@ -182,25 +217,43 @@ fun ProfileScreen(
         // Delete Confirmation Dialog
         if (showDeleteDialog) {
             AlertDialog(
-                onDismissRequest = { showDeleteDialog = false },
+                onDismissRequest = {
+                    showDeleteDialog = false
+                    passwordInput = ""
+                    passwordError = null
+                    viewModel.clearDeleteAccountMessages()
+                },
                 confirmButton = {
                     TextButton(
                         onClick = {
                             val userId = uiState.value.userProfile?.customerId
                             val email = uiState.value.userProfile?.email ?: ""
 
-                            if (!userId.isNullOrEmpty() && email.isNotEmpty() && passwordInput.isNotEmpty()) {
+                            if (passwordInput.isBlank()) {
+                                passwordError = "Please enter your password"
+                            } else if (!userId.isNullOrEmpty() && email.isNotEmpty()) {
                                 viewModel.deleteAccount(userId, email, passwordInput)
-                                onDeleteAccountClicked()
-                                showDeleteDialog = false
                             }
-                        }
+                        },
+                        enabled = !deleteAccountState.value.isDeleting
                     ) {
-                        Text("Delete", color = Color.Red)
+                        if (deleteAccountState.value.isDeleting) {
+                            Text("Deleting...", color = Color.Red)
+                        } else {
+                            Text("Delete", color = Color.Red)
+                        }
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { showDeleteDialog = false }) {
+                    TextButton(
+                        onClick = {
+                            showDeleteDialog = false
+                            passwordInput = ""
+                            passwordError = null
+                            viewModel.clearDeleteAccountMessages()
+                        },
+                        enabled = !deleteAccountState.value.isDeleting
+                    ) {
                         Text("Cancel")
                     }
                 },
@@ -208,11 +261,39 @@ fun ProfileScreen(
                 text = {
                     Column {
                         Text("Enter your password to confirm:")
+                        Spacer(Modifier.height(8.dp))
                         OutlinedTextField(
                             value = passwordInput,
-                            onValueChange = { passwordInput = it },
-                            label = { Text("Password") }
+                            onValueChange = {
+                                passwordInput = it
+                                passwordError = null
+                                viewModel.clearDeleteAccountMessages()
+                            },
+                            label = { Text("Password") },
+                            isError = passwordError != null || deleteAccountState.value.errorMessage != null,
+                            visualTransformation = if (passwordVisible) VisualTransformation.None else PasswordVisualTransformation(),
+                            trailingIcon = {
+                                IconButton(onClick = { passwordVisible = !passwordVisible }) {
+                                    val icon = if (passwordVisible) Icons.Filled.Visibility else Icons.Filled.VisibilityOff
+                                    Icon(
+                                        imageVector = icon,
+                                        contentDescription = if (passwordVisible) "Hide password" else "Show password"
+                                    )
+                                }
+                            },
+                            enabled = !deleteAccountState.value.isDeleting
                         )
+
+                        // Show error message
+                        val error = passwordError ?: deleteAccountState.value.errorMessage
+                        if (error != null) {
+                            Spacer(Modifier.height(4.dp))
+                            Text(
+                                text = error,
+                                color = Color.Red,
+                                fontSize = 12.sp
+                            )
+                        }
                     }
                 }
             )
@@ -223,8 +304,8 @@ fun ProfileScreen(
 @Composable
 private fun ProfileField(label: String, value: String) {
     Column {
-        Text(label, fontSize = 14.sp, color = Color.DarkGray)
-        Spacer(Modifier.height(4.dp))
+        Text(label, fontSize = 15.sp, color = Color.DarkGray)
+        Spacer(Modifier.height(5.dp))
         Text(value, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
     }
 }
