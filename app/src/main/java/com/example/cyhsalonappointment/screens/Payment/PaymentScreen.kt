@@ -43,7 +43,7 @@ fun PaymentScreen(
     servicePrice: Double,
     serviceId: Int,
     bookingDate: String,
-    bookingTime: String, // This is "Timeslot(timeslotId=TS0002, timeslot= 10:30)"
+    bookingTime: String,
     stylistId: String,
     customerId: String
 ) {
@@ -148,7 +148,7 @@ fun PaymentScreen(
 
                     Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
                         Text("Service:", color = Color.Gray)
-                        Text(serviceName)
+                        Text(serviceName.replace("+"," "))
                     }
 
                     Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
@@ -326,20 +326,20 @@ fun extractTimeFromTimeSlotString(timeSlotString: String): String {
     )
 
     return try {
-        // 1. Extract actual time inside "timeslot= 10:30"
+        //  Extract actual time inside "timeslot= 10:30"
         if (timeSlotString.contains("timeslot=")) {
             val regex = """timeslot=\s*([^,)]+)""".toRegex()
             regex.find(timeSlotString)?.groupValues?.get(1)?.trim() ?: timeSlotString
         }
 
-        // 2. Extract timeslotId=TS0002 → map to time
+        //  Extract timeslotId=TS0002 → map to time
         else if (timeSlotString.contains("timeslotId=", ignoreCase = true)) {
             val regex = """timeslotId=\s*(TS\d{4})""".toRegex(RegexOption.IGNORE_CASE)
             val id = regex.find(timeSlotString)?.groupValues?.get(1)
             timeSlotMap[id] ?: timeSlotString
         }
 
-        // 3. If input IS the ID — e.g., "TS0002"
+        //  If input IS the ID — e.g., "TS0002"
         else if (timeSlotMap.containsKey(timeSlotString.trim())) {
             timeSlotMap[timeSlotString.trim()]!!
         }

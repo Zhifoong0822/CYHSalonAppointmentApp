@@ -19,8 +19,7 @@ import androidx.navigation.NavHostController
 import com.example.cyhsalonappointment.App
 import com.example.cyhsalonappointment.screens.Payment.PaymentViewModel
 import com.example.cyhsalonappointment.screens.Payment.PaymentViewModelFactory
-import java.text.SimpleDateFormat
-import java.util.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,12 +33,26 @@ fun PaymentHistoryScreen(
         factory = PaymentViewModelFactory(paymentDao, appointmentDao)
     )
 
-    // USE THE NEW paymentsWithServices INSTEAD OF payments
-    val paymentsWithServices by viewModel.paymentsWithServices.collectAsState()
+    val payments by viewModel.payments.collectAsState()
+
+    // Store service names in a simple list
+    val serviceNames = remember { mutableStateMapOf<String, String>() }
+    val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        // CALL THE NEW FUNCTION
-        viewModel.loadPaymentsWithServiceNames()
+        viewModel.loadPayments()
+    }
+
+    // When payments load, get service names
+    LaunchedEffect(payments) {
+        coroutineScope.launch {
+            payments.forEach { payment ->
+                if (!serviceNames.containsKey(payment.appointmentId)) {
+                    val appointment = viewModel.getAppointment(payment.appointmentId)
+                    serviceNames[payment.appointmentId] = appointment?.serviceName ?: "Unknown Service"
+                }
+            }
+        }
     }
 
     Scaffold(
@@ -54,7 +67,7 @@ fun PaymentHistoryScreen(
             )
         }
     ) { padding ->
-        if (paymentsWithServices.isEmpty()) {
+        if (payments.isEmpty()) {
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -75,14 +88,15 @@ fun PaymentHistoryScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // USE paymentsWithServices INSTEAD OF payments
-                items(paymentsWithServices) { paymentWithService ->
+                items(payments) { payment ->
+                    // Get the service name for this payment
+                    val serviceName = serviceNames[payment.appointmentId] ?: "Loading..."
+
                     PaymentHistoryCard(
-                        payment = paymentWithService.payment,
-                        appointment = paymentWithService.appointment
+                        payment = payment,
+                        serviceName = serviceName
                     )
                 }
-
             }
         }
     }
@@ -91,7 +105,7 @@ fun PaymentHistoryScreen(
 @Composable
 fun PaymentHistoryCard(
     payment: com.example.cyhsalonappointment.local.entity.Payment,
-    appointment:  com.example.cyhsalonappointment.local.entity.Appointment
+    serviceName: String
 ) {
     Card(
         shape = RoundedCornerShape(12.dp),
@@ -117,7 +131,7 @@ fun PaymentHistoryCard(
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Text(
-                    text = "Service: ${appointment.serviceName}",
+                    text = "Service: $serviceName",  // NOW THIS WILL SHOW!
                     fontSize = 14.sp,
                     color = Color.Gray
                 )
@@ -151,8 +165,8 @@ fun PaymentHistoryCard(
 
 fun formatDate(dateString: String): String {
     return try {
-        val input = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val output = SimpleDateFormat("dd MMMM yyyy", Locale.getDefault())
+        val input = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val output = java.text.SimpleDateFormat("dd MMMM yyyy", java.util.Locale.getDefault())
 
         val parsed = input.parse(dateString)
         output.format(parsed!!)

@@ -19,11 +19,11 @@ class PaymentViewModel(
     private val _payments = MutableStateFlow<List<Payment>>(emptyList())
     val payments: StateFlow<List<Payment>> = _payments.asStateFlow()
 
-    // ADD THIS: New StateFlow for payments with service names
+    // StateFlow for payments with service names
     private val _paymentsWithServices = MutableStateFlow<List<PaymentWithService>>(emptyList())
     val paymentsWithServices: StateFlow<List<PaymentWithService>> = _paymentsWithServices.asStateFlow()
 
-    // ADD THIS: Simple data class to hold payment with service name
+    //  Simple data class to hold payment with service name
     data class PaymentWithService(
         val payment: Payment,
      val appointment: Appointment
@@ -37,7 +37,7 @@ class PaymentViewModel(
         }
     }
 
-    // ADD THIS: New function to load payments WITH service names
+    //   function to load payments WITH service names
     fun loadPaymentsWithServiceNames() {
         viewModelScope.launch {
             paymentDao.getAllPayments().collect { paymentList ->
