@@ -9,11 +9,15 @@ import java.time.LocalDate
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun DailyReportScreen(viewModel: ReportViewModel, onBack: () -> Unit) {
-    val today = LocalDate.now().toString()
+
+    val yesterday = remember {
+        LocalDate.now().minusDays(1).toString()
+    }
+
     val result by viewModel.report.collectAsState()
 
-    LaunchedEffect(true) {
-        viewModel.loadReport(today, today)
+    LaunchedEffect(yesterday) {
+        viewModel.loadReport(yesterday, yesterday)
     }
 
     ReportLayout(
@@ -25,3 +29,4 @@ fun DailyReportScreen(viewModel: ReportViewModel, onBack: () -> Unit) {
         onBack = onBack
     )
 }
+

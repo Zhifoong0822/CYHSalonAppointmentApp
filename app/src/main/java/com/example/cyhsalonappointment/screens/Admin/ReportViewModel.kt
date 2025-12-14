@@ -1,3 +1,4 @@
+
 package com.example.cyhsalonappointment.screens.Admin
 
 import androidx.lifecycle.ViewModel
@@ -16,4 +17,5 @@ class ReportViewModel(private val repo: ReportRepository) : ViewModel() {
             _report.value = repo.getReport(start, end)
         }
     }
+
 }

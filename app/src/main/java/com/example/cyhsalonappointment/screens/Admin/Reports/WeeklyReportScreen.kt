@@ -17,8 +17,9 @@ import androidx.compose.ui.Alignment
 @Composable
 fun WeeklyReportScreen(viewModel: ReportViewModel, onBack: () -> Unit) {
     val today = LocalDate.now()
-    val start = today.with(DayOfWeek.MONDAY)
-    val end = today.with(DayOfWeek.SUNDAY)
+    val start = today.minusWeeks(1).with(DayOfWeek.MONDAY)
+    val end = today.minusWeeks(1).with(DayOfWeek.SUNDAY)
+
 
     val result by viewModel.report.collectAsState()
 

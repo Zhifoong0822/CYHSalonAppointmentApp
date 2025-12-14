@@ -1,6 +1,7 @@
 
 package com.example.cyhsalonappointment.screens.Receipt
 
+import android.net.Uri
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.*
@@ -59,7 +60,7 @@ fun ReceiptScreen(
 
     // Generate receipt data
     val currentDateTime = LocalDateTime.now()
-    val receiptDate = currentDateTime.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+    val receiptDate = currentDateTime.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
     val receiptTime = currentDateTime.format(DateTimeFormatter.ofPattern("hh:mm a"))
 
 
@@ -111,6 +112,17 @@ fun ReceiptScreen(
                 paymentTime = receiptTime
             )
 
+            val cleanServiceName = serviceName.replace("+", " ")
+
+            appointmentDao.attachDetails(
+                appointmentId = appointmentId,
+                finalPrice = totalAmount,
+                serviceName = cleanServiceName,
+                customerName = null
+            )
+
+
+
             println("ReceiptScreen - Payment saved successfully")
         } catch (e: Exception) {
             println("ReceiptScreen - Error saving payment: ${e.message}")
@@ -156,7 +168,7 @@ fun ReceiptScreen(
             ) {
                 Icon(
                     Icons.Default.CheckCircle,
-                    contentDescription = "Success",
+                    contentDescription = "Successful",
                     tint = Color(0xFF4CAF50),
                     modifier = Modifier.size(80.dp)
                 )

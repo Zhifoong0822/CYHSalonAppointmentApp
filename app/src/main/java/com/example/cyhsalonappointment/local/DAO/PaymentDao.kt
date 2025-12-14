@@ -36,4 +36,6 @@ interface PaymentDao {
         WHERE status = 'Successful'
     """)
     suspend fun getTotalRevenue(): Double
+
+
 }

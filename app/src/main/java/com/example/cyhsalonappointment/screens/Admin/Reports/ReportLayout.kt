@@ -20,7 +20,10 @@ fun ReportLayout(
     services: List<com.example.cyhsalonappointment.local.DAO.ServiceSalesReport>,
     onBack: () -> Unit
 ) {
-    Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(16.dp)) {
+    Column(Modifier
+        .fillMaxSize()
+        .verticalScroll(rememberScrollState())
+        .padding(16.dp)) {
 
         IconButton(onClick = onBack) {
             Icon(Icons.Default.ArrowBack, contentDescription = null)
@@ -37,16 +40,28 @@ fun ReportLayout(
 
         Spacer(Modifier.height(18.dp))
 
-        Text("Services Sales", fontWeight = FontWeight.Bold)
+        Text("Services Sales History", fontWeight = FontWeight.Bold)
         Divider()
-        Spacer(Modifier.height(8.dp))
+        Spacer(Modifier.height(12.dp))
+
+        Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+            Text("Service                       ", fontWeight = FontWeight.Bold)
+            Text("Date                 ", fontWeight = FontWeight.Bold)
+            Text("Sales (RM)", fontWeight = FontWeight.Bold)
+
+            Spacer(Modifier.height(12.dp))
+        }
+
+        Spacer(Modifier.height(6.dp))
 
         services.forEach {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
                 Text(it.serviceName)
-                Text("RM ${it.total}")
+                Text(it.date)
+                Text("RM ${"%.2f".format(it.total)}")
             }
         }
+
     }
 }
 

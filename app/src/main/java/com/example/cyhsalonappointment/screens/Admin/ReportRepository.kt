@@ -4,6 +4,8 @@ import com.example.cyhsalonappointment.local.DAO.CustomerReport
 import com.example.cyhsalonappointment.local.DAO.ReportDAO
 import com.example.cyhsalonappointment.local.DAO.ServiceSalesReport
 
+
+
 class ReportRepository(private val dao: ReportDAO) {
 
     suspend fun getReport(start: String, end: String): ReportResult {

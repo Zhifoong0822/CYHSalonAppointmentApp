@@ -266,30 +266,34 @@ fun PaymentScreen(
             // ----------------------- Pay Button -----------------------
             Button(
                 onClick = {
-                    bookingViewModel.createAppointment(
-                        date = bookingDate,
-                        timeSlotId = bookingTime,
-                        customerId = customerId,
-                        serviceId = serviceId,
-                        stylistId = stylistId
-                    )
-
-                    Toast.makeText(context, "Appointment booked!", Toast.LENGTH_SHORT).show()
                     selectedPaymentMethod?.let { method ->
 
-                        val encodedServiceName = Uri.encode(serviceName)
-                        val encodedDate = Uri.encode(bookingDate)
-                        val encodedTime = Uri.encode(displayTime)
-                        val encodedMethod = Uri.encode(method)
-                        val encodedStylist = Uri.encode(stylistId)
+                        // Create appointment FIRST and get ID
+                        runBlocking {
+                            val realAppointmentId =
+                                bookingViewModel.createAppointmentAndReturnId(
+                                    date = bookingDate,
+                                    timeSlotId = bookingTime,
+                                    customerId = customerId,
+                                    serviceId = serviceId,
+                                    stylistId = stylistId
+                                )
 
-                        navController.navigate(
-                            "receipt/$appointmentId/$encodedServiceName/${servicePrice.toFloat()}/" +
-                                    "$encodedDate/$encodedTime/$encodedMethod/${bookingFee.toFloat()}/$encodedStylist"
-                        )
+                            val encodedServiceName = Uri.encode(serviceName)
+                            val encodedDate = Uri.encode(bookingDate)
+                            val encodedTime = Uri.encode(displayTime)
+                            val encodedMethod = Uri.encode(method)
+                            val encodedStylist = Uri.encode(stylistId ?: "")
+
+                            navController.navigate(
+                                "receipt/$realAppointmentId/$encodedServiceName/${servicePrice.toFloat()}/" +
+                                        "$encodedDate/$encodedTime/$encodedMethod/${bookingFee.toFloat()}/$encodedStylist"
+                            )
+                        }
+
+                        Toast.makeText(context, "Appointment booked & paid!", Toast.LENGTH_SHORT).show()
                     }
                 },
-
                 enabled = selectedPaymentMethod != null,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -298,6 +302,7 @@ fun PaymentScreen(
             ) {
                 Text("Pay RM${"%.2f".format(bookingFee)}", fontSize = 18.sp)
             }
+
         }
     }
 }

@@ -10,13 +10,21 @@ import java.time.temporal.TemporalAdjusters
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun MonthlyReportScreen(viewModel: ReportViewModel, onBack: () -> Unit) {
-    val start = LocalDate.now().with(TemporalAdjusters.firstDayOfMonth()).toString()
-    val end = LocalDate.now().with(TemporalAdjusters.lastDayOfMonth()).toString()
+    val today = LocalDate.now()
+    val start = today.minusMonths(1).withDayOfMonth(1)
+    val end = today.minusMonths(1).withDayOfMonth(
+        today.minusMonths(1).lengthOfMonth()
+    )
+
     val result by viewModel.report.collectAsState()
 
-    LaunchedEffect(true) {
-        viewModel.loadReport(start, end)
+    LaunchedEffect(Unit) {
+        viewModel.loadReport(
+            start.toString(),
+            end.toString()
+        )
     }
+
     if (result == null) {
         LoadingReportUI()
     } else {
