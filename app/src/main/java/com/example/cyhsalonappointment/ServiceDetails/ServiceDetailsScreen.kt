@@ -9,11 +9,18 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -35,58 +42,86 @@ fun ServiceDetailsScreen(
     selectedDate: String,
     selectedTimeSlot: String,
     viewModel: ServiceDetailViewModel = viewModel()
-){
+) {
     var selectedServiceId by remember { mutableStateOf<Int?>(null) }
 
     LaunchedEffect(categoryId) {
         viewModel.loadServicesByCategory(categoryId)
     }
 
-    // Collect services from ViewModel
     val services by viewModel.services.collectAsState()
 
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text("Select Service Details", style = MaterialTheme.typography.titleLarge)
-        Spacer(modifier = Modifier.height(16.dp))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Select Service Details") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(
+                            imageVector = Icons.Default.ArrowBack,
+                            contentDescription = "Back"
+                        )
+                    }
+                }
+            )
+        }
+    ) { padding ->
 
-        if (services.isEmpty()) {
-            Text("No service details available.", style = MaterialTheme.typography.bodyLarge)
-        } else {
-            services.forEach { service ->
-                val isSelected = service.serviceId == selectedServiceId
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .clickable { selectedServiceId = service.serviceId },
-                    shape = RoundedCornerShape(12.dp),
-                    border = if (isSelected) BorderStroke(2.dp, MaterialTheme.colorScheme.primary) else null
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(service.serviceName, style = MaterialTheme.typography.titleMedium)
-                        service.priceShort?.let { Text("Short: RM $it") }
-                        service.priceMedium?.let { Text("Medium: RM $it") }
-                        service.priceLong?.let { Text("Long: RM $it") }
-                        service.priceAll?.let { Text("All Length: RM $it") }
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(padding)   // IMPORTANT
+                .padding(16.dp)
+        ) {
+
+            if (services.isEmpty()) {
+                Text(
+                    "No service details available.",
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            } else {
+                services.forEach { service ->
+                    val isSelected = service.serviceId == selectedServiceId
+
+                    Card(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(vertical = 8.dp)
+                            .clickable { selectedServiceId = service.serviceId },
+                        shape = RoundedCornerShape(12.dp),
+                        border = if (isSelected)
+                            BorderStroke(2.dp, MaterialTheme.colorScheme.primary)
+                        else null
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Text(
+                                service.serviceName,
+                                style = MaterialTheme.typography.titleMedium
+                            )
+                            service.priceShort?.let { Text("Short: RM $it") }
+                            service.priceMedium?.let { Text("Medium: RM $it") }
+                            service.priceLong?.let { Text("Long: RM $it") }
+                            service.priceAll?.let { Text("All Length: RM $it") }
+                        }
                     }
                 }
             }
-        }
 
-        Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(24.dp))
 
-        Button(
-            onClick = {
-                selectedServiceId?.let { serviceId ->
-                    navController.navigate(
-                        "selectStylist/$serviceId/$selectedDate/$selectedTimeSlot"
-                    )
-                }
-            },
-            enabled = selectedServiceId != null,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Proceed")
+            Button(
+                onClick = {
+                    selectedServiceId?.let { serviceId ->
+                        navController.navigate(
+                            "selectStylist/$serviceId/$selectedDate/$selectedTimeSlot"
+                        )
+                    }
+                },
+                enabled = selectedServiceId != null,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Proceed")
+            }
         }
     }
 }

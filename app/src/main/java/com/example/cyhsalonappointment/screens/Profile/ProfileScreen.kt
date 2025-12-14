@@ -6,9 +6,13 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Logout
@@ -31,6 +35,7 @@ import com.example.cyhsalonappointment.BottomNavBar
 import com.example.cyhsalonappointment.R
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileScreen(
     customerEmail: String,
@@ -95,6 +100,16 @@ fun ProfileScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Profile") },
+                navigationIcon = {
+                    IconButton(onClick = { navController.popBackStack() }) {
+                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                }
+            )
+        },
         snackbarHost = { SnackbarHost(snackbarHostState) },
         bottomBar = { BottomNavBar(navController) }
     ) { padding ->
@@ -105,23 +120,16 @@ fun ProfileScreen(
                 .fillMaxSize()
                 .background(Color.White)
                 .padding(20.dp)
+                .verticalScroll(rememberScrollState())
+
         ) {
 
-            // Title Row
+            // Header Row (Edit button only)
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
             ) {
-                Text(
-                    text = "Profile",
-                    fontSize = 26.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color.Black
-                )
-
-                Spacer(modifier = Modifier.weight(1f))
-
-                // Edit Button
                 OutlinedButton(
                     onClick = onEditProfileClicked,
                     shape = RoundedCornerShape(8.dp)
@@ -131,6 +139,7 @@ fun ProfileScreen(
                     Text("Edit")
                 }
             }
+
 
             Spacer(Modifier.height(20.dp))
 

@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
+import com.example.cyhsalonappointment.BottomNavBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -36,13 +37,11 @@ fun AccountSelectionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Account") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                    }
-                }
+                title = { Text("Account") }
             )
+        },
+        bottomBar = {
+            BottomNavBar(navController)
         }
     ) { padding ->
         Column(
