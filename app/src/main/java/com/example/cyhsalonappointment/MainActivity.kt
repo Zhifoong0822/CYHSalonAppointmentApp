@@ -302,12 +302,12 @@ class MainActivity : ComponentActivity() {
                     )
                 ) { backStackEntry ->
                     val isAdmin = backStackEntry.arguments?.getString("isAdmin") == "true"
-                    val status = backStackEntry.arguments?.getString("status") // filter
+                    val status = backStackEntry.arguments?.getString("status")
 
                     BookingHistoryScreen(
                         navController = navController,
                         viewModel = bookingHistoryViewModel,
-                        customerId = customerId ?:"",   // <-- pass it here
+                        customerId = customerId ?:"",
                         isAdmin = isAdmin,
                         selectedStatus = status,
                         onRescheduleClick = { appointment ->
@@ -363,17 +363,12 @@ class MainActivity : ComponentActivity() {
 
                     ServiceDetailsScreen(
                         navController = navController,
-                        categoryId = categoryId,            // pass categoryId directly
+                        categoryId = categoryId,
                         selectedDate = selectedDate,
                         selectedTimeSlot = selectedTimeSlotId,
                         viewModel = viewModel
                     )
                 }
-
-
-
-
-
 
 
 
@@ -386,13 +381,9 @@ class MainActivity : ComponentActivity() {
 
                     val name = backStackEntry.arguments?.getString("serviceName") ?: ""
 
-                    val serviceFlow = serviceRepo.getServiceByName(name)
-                    val service by serviceFlow.collectAsState(initial = null)
-                    val serviceId = service?.serviceId ?: 0
 
                     BookingScreen(
                         navController = navController,
-                        serviceId = serviceId,
                         serviceName = name
                     )
                 }
@@ -442,12 +433,7 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-                // ========== PAYMENT SYSTEM ROUTES ==========
 
-                // Payment Screen - UPDATED: Added stylistId parameter
-                // ========== PAYMENT SYSTEM ROUTES ==========
-
-// Payment main route
                 composable(
                     route = "payment/{appointmentId}/{serviceName}/{servicePrice}/{serviceId}/{bookingDate}/{bookingTime}/{stylistId}/{customerId}",
                     arguments = listOf(
@@ -485,7 +471,6 @@ class MainActivity : ComponentActivity() {
                     )
                 }
 
-// Temporary payment route (corrected)
 
 
 // Receipt
@@ -537,11 +522,6 @@ class MainActivity : ComponentActivity() {
                 composable("accountSelection") {
                         AccountSelectionScreen(navController)
                     }
-
-
-
-
-
 
                 }
             }

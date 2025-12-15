@@ -38,12 +38,10 @@ import java.time.LocalTime
 @Composable
 fun BookingScreen(
     navController: NavHostController,
-    serviceId: Int,
     serviceName: String
 ) {
     var selectedDate by remember { mutableStateOf(LocalDate.now()) }
     var selectedTimeSlot by remember { mutableStateOf<TimeSlot?>(null) }
-    val context = LocalContext.current
     val timeSlotDao = App.db.timeSlotDao()
     val appointmentDao = App.db.appointmentDao()
 
@@ -51,7 +49,6 @@ fun BookingScreen(
         factory = BookingViewModelFactory(timeSlotDao, appointmentDao)
     )
 
-    // Collect timeslots from DB
     val availableTimeSlots by viewModel.timeSlots.collectAsState()
 
 
@@ -161,8 +158,8 @@ fun DatePickerField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeSlotDropdown(
-    timeSlots: List<TimeSlot>,          // <- pass TimeSlot objects
-    selectedSlot: TimeSlot?,            // <- selected object
+    timeSlots: List<TimeSlot>,
+    selectedSlot: TimeSlot?,
     selectedDate: LocalDate,
     onSelect: (TimeSlot) -> Unit
 ) {

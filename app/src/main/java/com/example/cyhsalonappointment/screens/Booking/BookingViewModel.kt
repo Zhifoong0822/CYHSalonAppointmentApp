@@ -36,6 +36,7 @@ class BookingViewModel(
     }
 
     // ---------- EXISTING FUNCTION (DO NOT BREAK OTHERS) ----------
+    @RequiresApi(Build.VERSION_CODES.O)
     fun createAppointment(
         date: String,
         timeSlotId: String,
@@ -62,6 +63,7 @@ class BookingViewModel(
     }
 
     // ---------- NEW FUNCTION (USED BY PAYMENT) ----------
+    @RequiresApi(Build.VERSION_CODES.O)
     suspend fun createAppointmentAndReturnId(
         date: String,
         timeSlotId: String,
