@@ -63,7 +63,6 @@ import com.example.cyhsalonappointment.screens.Customer.CustomerRepository
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModel
 import com.example.cyhsalonappointment.screens.Customer.CustomerViewModelFactory
 import com.example.cyhsalonappointment.screens.EditProfile.EditProfileScreen
-import com.example.cyhsalonappointment.screens.ForgotPassword.ForgotPasswordScreen
 import com.example.cyhsalonappointment.screens.Login.LoginScreen
 import com.example.cyhsalonappointment.screens.Logo.LogoScreen
 import com.example.cyhsalonappointment.screens.Profile.ProfileScreen
@@ -165,8 +164,7 @@ class MainActivity : ComponentActivity() {
                 composable("login"){
                     LoginScreen(viewModel = customerViewModel,
                         onSuccess = { navController.navigate("services") },
-                        onBackButtonClicked = { navController.navigate("logo") },
-                        onForgotPasswordClicked = { navController.navigate("forgot_password") })
+                        onBackButtonClicked = { navController.navigate("logo") })
                 }
 
                 composable("sign_up"){
@@ -263,10 +261,7 @@ class MainActivity : ComponentActivity() {
 // ---------------------------------------------------------------
 
 
-                composable("forgot_password"){
-                    ForgotPasswordScreen(viewModel = customerViewModel,
-                        onBackButtonClicked = { navController.popBackStack() })
-                }
+
 
                 composable("profile") {
                     val userEmail by session.getUserEmail().collectAsState(initial = "")
