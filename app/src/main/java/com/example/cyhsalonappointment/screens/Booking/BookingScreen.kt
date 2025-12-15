@@ -51,7 +51,6 @@ fun BookingScreen(
         factory = BookingViewModelFactory(timeSlotDao, appointmentDao)
     )
 
-    // Collect timeslots from DB
     val availableTimeSlots by viewModel.timeSlots.collectAsState()
 
 
@@ -139,7 +138,7 @@ fun DatePickerField(
             value = selectedDate.toString(),
             onValueChange = {},
             readOnly = true,
-            enabled = false, // disable interaction so Box click works
+            enabled = false,
             label = { Text("Select Date") },
             trailingIcon = { Icon(Icons.Default.DateRange, contentDescription = null) },
             modifier = Modifier.fillMaxWidth(),
@@ -161,8 +160,8 @@ fun DatePickerField(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TimeSlotDropdown(
-    timeSlots: List<TimeSlot>,          // <- pass TimeSlot objects
-    selectedSlot: TimeSlot?,            // <- selected object
+    timeSlots: List<TimeSlot>,
+    selectedSlot: TimeSlot?,
     selectedDate: LocalDate,
     onSelect: (TimeSlot) -> Unit
 ) {
@@ -175,7 +174,7 @@ fun TimeSlotDropdown(
                 if (selectedDate != today) {
                     true
                 } else {
-                    val now = LocalTime.now() // <-- move here!
+                    val now = LocalTime.now()
                     val slotTime = LocalTime.parse(slot.timeSlot)
                     slotTime.isAfter(now)
                 }
@@ -196,7 +195,7 @@ fun TimeSlotDropdown(
                 onExpandedChange = { expanded = !expanded }
             ) {
                 OutlinedTextField(
-                    value = selectedSlot?.timeSlot ?: "",   // display "10:00"
+                    value = selectedSlot?.timeSlot ?: "",
                     onValueChange = {},
                     readOnly = true,
                     label = { Text("Select Time Slot") },
@@ -234,7 +233,7 @@ fun showDatePicker(
         context,
         { _, year, month, day ->
             val selectedDate = LocalDate.of(year, month + 1, day)
-            // Only accept today or future dates
+
             if (!selectedDate.isBefore(LocalDate.now())) {
                 onDateSelected(selectedDate)
             } else {
@@ -246,7 +245,6 @@ fun showDatePicker(
         currentDate.dayOfMonth
     )
 
-    // Set the minimum date to today (in milliseconds)
     val calendar = java.util.Calendar.getInstance()
     calendar.set(
         LocalDate.now().year,

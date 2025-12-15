@@ -16,7 +16,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
@@ -59,7 +58,6 @@ fun EditProfileScreen(
         ) {
             Spacer(modifier = Modifier.height(20.dp))
 
-//Back Button and Title in same row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -90,7 +88,6 @@ fun EditProfileScreen(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Check if profile exists
             if (uiState.userProfile != null) {
                 val profile = uiState.userProfile!!
 
@@ -104,7 +101,7 @@ fun EditProfileScreen(
                         modifier = Modifier.padding(20.dp),
                         verticalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        //Username
+
                         Column {
                             Text(
                                 text = "Username",
@@ -145,7 +142,10 @@ fun EditProfileScreen(
                                 },
                                 modifier = Modifier.fillMaxWidth(),
                                 enabled = !editProfileState.isLoading,
-                                isError = editProfileState.errorMessage?.contains("username", ignoreCase = true) == true,
+                                isError = editProfileState.errorMessage?.contains(
+                                    "username",
+                                    ignoreCase = true
+                                ) == true,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = Color(0xFF4CAF50),
                                     focusedLabelColor = Color(0xFF4CAF50),
@@ -158,7 +158,6 @@ fun EditProfileScreen(
 
                         Spacer(modifier = Modifier.height(5.dp))
 
-                        //Gender
                         Column {
                             Text(
                                 text = "Gender",
@@ -224,9 +223,18 @@ fun EditProfileScreen(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false }
                             ) {
-                                listOf("Male", "Female", "Prefer not to say").forEach { genderOption ->
+                                listOf(
+                                    "Male",
+                                    "Female",
+                                    "Prefer not to say"
+                                ).forEach { genderOption ->
                                     DropdownMenuItem(
-                                        text = { Text(genderOption, fontWeight = FontWeight.Medium) },
+                                        text = {
+                                            Text(
+                                                genderOption,
+                                                fontWeight = FontWeight.Medium
+                                            )
+                                        },
                                         onClick = {
                                             viewModel.updateNewGender(genderOption)
                                             expanded = false
@@ -284,47 +292,22 @@ fun EditProfileScreen(
 
                         Spacer(modifier = Modifier.height(5.dp))
 
-                        //Contact Number
                         Column {
-                            Text(
-                                text = "Contact Number",
-                                fontSize = 15.sp,
-                                color = Color.DarkGray
-                            )
+                            Text("Contact Number", fontSize = 15.sp, color = Color.DarkGray)
                             Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = profile.contactNumber.ifEmpty { "Not set" },
-                                fontSize = 18.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
+                            Text(profile.contactNumber.ifEmpty { "Not set" }, fontSize = 18.sp, fontWeight = FontWeight.SemiBold)
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            //New Contact Number
                             OutlinedTextField(
                                 value = editProfileState.newContactNumber,
-                                onValueChange = { viewModel.updateNewContactNumber(it) },
-                                label = {
-                                    Text(
-                                        "New Contact Number",
-                                        fontWeight = FontWeight.Medium
-                                    )
-                                },
-                                placeholder = {
-                                    Text(
-                                        "Enter new contact number",
-                                        color = Color(0xFF9CA3AF)
-                                    )
-                                },
-                                leadingIcon = {
-                                    Icon(
-                                        imageVector = Icons.Filled.Phone,
-                                        contentDescription = "Contact",
-                                        tint = Color(0xFF4CAF50)
-                                    )
-                                },
+                                onValueChange = { viewModel.onEditProfileContactChange(it) },
+                                label = { Text("New Contact Number", fontWeight = FontWeight.Medium) },
+                                placeholder = { Text("Enter new contact number", color = Color(0xFF9CA3AF)) },
+                                leadingIcon = { Icon(Icons.Filled.Phone, contentDescription = "Contact", tint = Color(0xFF4CAF50)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 enabled = !editProfileState.isLoading,
+                                isError = editProfileState.errorMessage?.contains("contact", ignoreCase = true) == true,
                                 colors = OutlinedTextFieldDefaults.colors(
                                     focusedBorderColor = Color(0xFF4CAF50),
                                     focusedLabelColor = Color(0xFF4CAF50),
@@ -333,11 +316,23 @@ fun EditProfileScreen(
                                 ),
                                 shape = RoundedCornerShape(8.dp)
                             )
+
+                            // Inline error message
+                            editProfileState.errorMessage?.let { errorMsg ->
+                                if (errorMsg.contains("contact", ignoreCase = true)) {
+                                    Text(
+                                        text = errorMsg,
+                                        color = Color.Red,
+                                        fontSize = 12.sp,
+                                        modifier = Modifier.padding(top = 4.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(20.dp))
+                        Spacer(modifier = Modifier.height(20.dp))
 
                 //Save Button
                 Button(
@@ -354,6 +349,7 @@ fun EditProfileScreen(
                         viewModel.updateUserProfile(updatedProfile)
                     },
                     enabled = !editProfileState.isLoading &&
+                            editProfileState.errorMessage.isNullOrEmpty() &&
                             (editProfileState.newUsername.isNotBlank() ||
                                     editProfileState.newGender.isNotBlank() ||
                                     editProfileState.newEmail.isNotBlank() ||
@@ -395,28 +391,29 @@ fun EditProfileScreen(
                     }
                 }
 
-                //Error Message
                 editProfileState.errorMessage?.let { errorMsg ->
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Card(
-                        modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(8.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Color(0xFFFEE2E2)
-                        )
-                    ) {
-                        Text(
-                            text = errorMsg,
-                            color = Color(0xFFDC2626),
-                            fontWeight = FontWeight.Medium,
-                            fontSize = 14.sp,
-                            modifier = Modifier.padding(12.dp),
-                            textAlign = TextAlign.Center
-                        )
+                    if (!errorMsg.contains("contact", ignoreCase = true)) {
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFFEE2E2)
+                            )
+                        ) {
+                            Text(
+                                text = errorMsg,
+                                color = Color(0xFFDC2626),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(12.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
                     }
                 }
+
             } else {
-                // Loading state
                 Card(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(Color.White),

@@ -29,12 +29,13 @@ data class SignUpState(
     val gender: String = "",
     val birthdate: String = "",
 
-    // Username checking
     val isCheckingUsername: Boolean = false,
     val isUsernameAvailable: Boolean? = null,
     val usernameError: String? = null,
 
-    // Form validation errors
+    val isCheckingEmail: Boolean = false,
+    val isEmailAvailable: Boolean? = null,
+
     val emailError: String? = null,
     val passwordError: String? = null,
     val confirmPasswordError: String? = null,
@@ -42,7 +43,6 @@ data class SignUpState(
     val birthdateError: String? = null,
     val genderError: String? = null,
 
-    // Result UI
     val isLoading: Boolean = false,
     val successMessage: String? = null,
     val errorMessage: String? = null
@@ -77,12 +77,6 @@ data class UserProfile(
     val updatedAt: Long
 )
 
-data class ResetPasswordState(
-    val isLoading: Boolean = false,
-    val successMessage: String? = null,
-    val errorMessage: String? = null
-)
-
 data class DeleteAccountState(
     val isDeleting: Boolean = false,
     val errorMessage: String? = null,
@@ -97,6 +91,7 @@ class CustomerViewModel(private val repository: CustomerRepository,
     val loginState: StateFlow<LoginState> = _loginState
 
     private var usernameCheckJob: Job? = null
+    private var emailCheckJob: Job? = null
 
     private val _signUpState = MutableStateFlow(SignUpState())
     val signUpState: StateFlow<SignUpState> = _signUpState
@@ -104,30 +99,21 @@ class CustomerViewModel(private val repository: CustomerRepository,
     private val _uiState = MutableStateFlow(UiState(isLoading = true))
     val uiState: StateFlow<UiState> = _uiState
 
-    private val _customerProfile = MutableStateFlow<CustomerEntity?>(null)
-    val customerProfile = _customerProfile
-
     private val _editProfileState = MutableStateFlow(EditProfileState())
     val editProfileState = _editProfileState.asStateFlow()
-
-    private val _resetPasswordState = MutableStateFlow(ResetPasswordState())
-    val resetPasswordState = _resetPasswordState
 
     private val _deleteAccountState = MutableStateFlow(DeleteAccountState())
     val deleteAccountState = _deleteAccountState.asStateFlow()
 
-    // Logged-in user (optional)
     private val _loggedInCustomer = MutableStateFlow<CustomerEntity?>(null)
     val loggedInCustomer: StateFlow<CustomerEntity?> = _loggedInCustomer
 
-    // For controlling form clear
     private val _shouldClearLoginForm = MutableStateFlow(false)
     val shouldClearLoginForm: StateFlow<Boolean> = _shouldClearLoginForm
 
     private val _shouldClearSignUpForm = MutableStateFlow(false)
     val shouldClearSignUpForm: StateFlow<Boolean> = _shouldClearSignUpForm
 
-    // Registration result
     private val _registrationResult = MutableStateFlow<Boolean?>(null)
     val registrationResult: StateFlow<Boolean?> = _registrationResult
 
@@ -141,7 +127,6 @@ class CustomerViewModel(private val repository: CustomerRepository,
             val email = if (loggedIn) dataStoreManager.getUserEmail().first() else ""
 
             if (loggedIn && email.isNotEmpty()) {
-                // Load the profile; it will handle updating _uiState itself
                 loadLocalUserProfile(email)
             } else {
                 _uiState.value = _uiState.value.copy(
@@ -168,7 +153,6 @@ class CustomerViewModel(private val repository: CustomerRepository,
             val customer = repository.loginCustomer(email, password)
 
             if (customer != null) {
-                // Login succeeded
                 _loggedInCustomer.value = customer
                 _uiState.value = _uiState.value.copy(
                     userProfile = customer,
@@ -191,7 +175,6 @@ class CustomerViewModel(private val repository: CustomerRepository,
                 _shouldClearLoginForm.value = true
 
             } else {
-                // Login failed
                 _loginState.value = _loginState.value.copy(
                     isLoading = false,
                     errorMessage = "Invalid email or password",
@@ -254,6 +237,22 @@ class CustomerViewModel(private val repository: CustomerRepository,
                 return@launch
             }
 
+            if (signUpState.value.isUsernameAvailable == false) {
+                _signUpState.value = _signUpState.value.copy(
+                    usernameError = "Username already taken",
+                    errorMessage = "Please fix the errors before submitting"
+                )
+                return@launch
+            }
+
+            if (signUpState.value.isEmailAvailable == false) {
+                _signUpState.value = _signUpState.value.copy(
+                    emailError = "Email already registered",
+                    errorMessage = "Please fix the errors before submitting"
+                )
+                return@launch
+            }
+
             _signUpState.value = _signUpState.value.copy(
                 isLoading = true,
                 errorMessage = null,
@@ -261,11 +260,9 @@ class CustomerViewModel(private val repository: CustomerRepository,
             )
 
             try {
-                // Step 1: Get existing IDs
                 val existingIds = repository.getAllCustomerIds()
                 val newId = generateCustomerId(existingIds)
 
-                // Step 2: Build new CustomerEntity
                 val newCustomer = CustomerEntity(
                     customerId = newId,
                     username = signUpState.value.username.trim(),
@@ -277,10 +274,8 @@ class CustomerViewModel(private val repository: CustomerRepository,
                     updatedAt = System.currentTimeMillis()
                 )
 
-                // Step 3: Insert customer through repository
                 val result = repository.signUp(newCustomer)
 
-                // Step 4: Handle result
                 when (result) {
                     is AuthResult.Success -> {
                         _registrationResult.value = true
@@ -330,17 +325,17 @@ class CustomerViewModel(private val repository: CustomerRepository,
         if (username.length >= 2) {
             usernameCheckJob?.cancel()
             usernameCheckJob = viewModelScope.launch {
-                delay(500) // debounce
+                delay(500)
                 checkUsernameAvailability(username)
             }
         }
     }
 
     fun generateCustomerId(existingIds: List<String>): String {
-        if (existingIds.isEmpty()) return "C0001" // first customer
+        if (existingIds.isEmpty()) return "C0001"
 
         val maxNumber = existingIds
-            .map { it.removePrefix("C").toIntOrNull() ?: 0 } // remove "C" and convert
+            .map { it.removePrefix("C").toIntOrNull() ?: 0 }
             .maxOrNull() ?: 0
 
         val nextNumber = maxNumber + 1
@@ -368,6 +363,27 @@ class CustomerViewModel(private val repository: CustomerRepository,
         }
     }
 
+    private fun checkEmailAvailability(email: String) {
+        viewModelScope.launch {
+            try {
+                _signUpState.value = _signUpState.value.copy(isCheckingEmail = true)
+
+                val available = repository.isEmailAvailable(email)
+
+                _signUpState.value = _signUpState.value.copy(
+                    isCheckingEmail = false,
+                    isEmailAvailable = available,
+                    emailError = if (!available) "Email already registered" else null
+                )
+            } catch (e: Exception) {
+                _signUpState.value = _signUpState.value.copy(
+                    isCheckingEmail = false,
+                    emailError = "Error checking email"
+                )
+            }
+        }
+    }
+
     fun setConfirmPasswordError(message: String?) {
         _signUpState.value = _signUpState.value.copy(confirmPasswordError = message)
     }
@@ -381,10 +397,8 @@ class CustomerViewModel(private val repository: CustomerRepository,
     }
 
     fun onSignUpContactChange(contact: String) {
-        // Count digits only (excluding dashes, spaces, etc.)
         val digitsOnly = contact.filter { it.isDigit() }
 
-        // Prevent entering more than 11 digits
         if (digitsOnly.length > 11) {
             return
         }
@@ -405,6 +419,14 @@ class CustomerViewModel(private val repository: CustomerRepository,
             email = email,
             emailError = emailError
         )
+
+        if (emailError == null) {
+            emailCheckJob?.cancel()
+            emailCheckJob = viewModelScope.launch {
+                delay(500)
+                checkEmailAvailability(email)
+            }
+        }
     }
 
     fun onSignUpPasswordChange(password: String) {
@@ -429,7 +451,7 @@ class CustomerViewModel(private val repository: CustomerRepository,
             username.isBlank() -> "Username cannot be empty"
             username.any { it.isDigit() } -> "Username cannot contain numbers"
             !username.all { it.isLetter() || it.isWhitespace() } -> "Username can only contain letters"
-            else -> null // Valid username
+            else -> null
         }
     }
 
@@ -446,19 +468,26 @@ class CustomerViewModel(private val repository: CustomerRepository,
             !android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches() -> "Invalid email format"
             !email.endsWith("@gmail.com", ignoreCase = true) &&
                     !email.endsWith("@yahoo.com", ignoreCase = true) -> "Invalid email format"
-            else -> null // Email is valid
+            else -> null
         }
     }
 
     private fun validateContactNumber(contactNumber: String): String? {
-        // Remove all non-digit characters (dashes, spaces, etc.) to count only digits
+
+        if (contactNumber.isBlank()) {
+            return "Contact number cannot be empty"
+        }
+
+        if (!contactNumber.all { it.isDigit() || it == '-' }) {
+            return "Contact number must contain digits only"
+        }
+
         val digitsOnly = contactNumber.filter { it.isDigit() }
 
         return when {
-            contactNumber.isBlank() -> "Contact number cannot be empty"
             digitsOnly.length < 10 -> "Contact number must have at least 10 digits"
             digitsOnly.length > 11 -> "Contact number cannot exceed 11 digits"
-            else -> null // Valid contact number
+            else -> null
         }
     }
 
@@ -469,9 +498,9 @@ class CustomerViewModel(private val repository: CustomerRepository,
             !password.any { it.isUpperCase() } -> "Password must contain at least one uppercase letter"
             !password.any { it.isDigit() } -> "Password must contain at least one number"
             !password.any { !it.isLetterOrDigit() } -> "Password must contain at least one special character"
-            else -> null // Password is valid
+            else -> null
         }
-    } //atleast one capital letter, atleast one digit, atleast one special character, atleast 8 characters
+    }
 
     fun loadLocalUserProfile(email: String) {
         viewModelScope.launch {
@@ -482,12 +511,11 @@ class CustomerViewModel(private val repository: CustomerRepository,
             Log.d("ProfileScreen", "User loaded: $localUser")
 
             if (localUser != null) {
-                // Save session info in DataStore
                 dataStoreManager.saveLoginStatus(true)
                 dataStoreManager.saveUserId(localUser.customerId)
 
                 _uiState.value = _uiState.value.copy(
-                    userProfile = localUser, // directly use CustomerEntity
+                    userProfile = localUser,
                     isLoggedIn = true,
                     isLoading = false,
                     isAuthChecking = false,
@@ -522,7 +550,6 @@ class CustomerViewModel(private val repository: CustomerRepository,
                     contactNumber = updated.contactNumber
                 )
 
-                // update UI (refresh profile)
                 _uiState.value = _uiState.value.copy(
                     userProfile = CustomerEntity(
                         customerId = updated.customerId,
@@ -530,7 +557,7 @@ class CustomerViewModel(private val repository: CustomerRepository,
                         gender = updated.gender,
                         email = updated.email,
                         contactNumber = updated.contactNumber,
-                        password = _uiState.value.userProfile?.password ?: "", // keep old password
+                        password = _uiState.value.userProfile?.password ?: "",
                         createdAt = updated.createdAt,
                         updatedAt = updated.updatedAt
                     )
@@ -558,50 +585,24 @@ class CustomerViewModel(private val repository: CustomerRepository,
         _editProfileState.value = _editProfileState.value.copy(newGender = value)
     }
 
-    fun updateNewContactNumber(value: String) {
-        _editProfileState.value = _editProfileState.value.copy(newContactNumber = value)
+    fun onEditProfileContactChange(contact: String) {
+        val digitsOnly = contact.filter { it.isDigit() }
+        if (digitsOnly.length > 11) return
+
+        val contactError = validateContactNumber(contact)
+
+        _editProfileState.value = _editProfileState.value.copy(
+            newContactNumber = contact,
+            errorMessage = contactError
+        )
     }
 
-    fun resetPassword(email: String) {
-        viewModelScope.launch {
-            _resetPasswordState.value = ResetPasswordState(isLoading = true)
-
-            val customer = repository.getCustomerByEmail(email)
-
-            if (customer == null) {
-                _resetPasswordState.value = ResetPasswordState(
-                    isLoading = false,
-                    errorMessage = "Email not found."
-                )
-                return@launch
-            }
-
-            // Simulate sending an email
-            delay(1500)
-
-            _resetPasswordState.value = ResetPasswordState(
-                isLoading = false,
-                successMessage = "Password reset link has been sent to your email."
-            )
-        }
-    }
-
-    // Clear success/error messages after showing Snackbar
     fun clearEditProfileSuccessMessage() {
         _editProfileState.value = _editProfileState.value.copy(successMessage = null)
     }
 
-    fun clearEditProfileErrorMessage() {
-        _editProfileState.value = _editProfileState.value.copy(errorMessage = null)
-    }
-
-    // Optional: reset form
     fun clearEditProfileForm() {
         _editProfileState.value = EditProfileState()
-    }
-
-    fun clearResetPasswordMessages() {
-        _resetPasswordState.value = ResetPasswordState()
     }
 
     fun deleteAccount(userId: String, email: String, password: String) {
@@ -617,7 +618,6 @@ class CustomerViewModel(private val repository: CustomerRepository,
             _deleteAccountState.value = DeleteAccountState(isDeleting = true)
 
             try {
-                // Validate user
                 val user = repository.loginCustomer(email, password)
 
                 if (user == null) {
@@ -636,15 +636,12 @@ class CustomerViewModel(private val repository: CustomerRepository,
                     return@launch
                 }
 
-                // Delete account
                 repository.deleteCustomer(userId)
 
-                // Clear DataStore session
                 dataStoreManager.clearSession()
 
-                // Clear in-memory state
                 _loggedInCustomer.value = null
-                _uiState.value = UiState()  // Reset all UI state
+                _uiState.value = UiState()
                 clearLoginForm()
                 clearSignUpForm()
                 clearEditProfileForm()
@@ -667,14 +664,11 @@ class CustomerViewModel(private val repository: CustomerRepository,
     // LOG OUT
     fun logout() {
         viewModelScope.launch {
-            // Clear session data
             dataStoreManager.clearSession()
 
-            // Reset in-memory state
             _loggedInCustomer.value = null
-            _uiState.value = UiState(isAuthChecking = false) // explicitly stop auth checking
+            _uiState.value = UiState(isAuthChecking = false)
 
-            // Clear forms
             clearLoginForm()
             clearSignUpForm()
         }
@@ -695,7 +689,6 @@ class CustomerViewModel(private val repository: CustomerRepository,
         _registrationResult.value = null
     }
 
-    //Clears login or registration messages after showing snackbar
     fun clearLoginMessages() {
         _registrationResult.value = null
     }

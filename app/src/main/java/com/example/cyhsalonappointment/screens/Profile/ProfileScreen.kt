@@ -167,7 +167,7 @@ fun ProfileScreen(
                     modifier = Modifier.fillMaxWidth(),
                     colors = CardDefaults.cardColors(Color.White),
                     border = BorderStroke(1.dp, Color(0xFFDDDDDD)),
-                    elevation = CardDefaults.cardElevation(0.dp)   // removed shadow
+                    elevation = CardDefaults.cardElevation(0.dp)
                 ) {
                     Column(
                         Modifier.padding(20.dp),

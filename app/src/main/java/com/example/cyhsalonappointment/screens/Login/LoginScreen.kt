@@ -70,7 +70,6 @@ import kotlinx.coroutines.launch
 fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                 onBackButtonClicked: () -> Unit,
                 onSuccess: () -> Unit,
-                onForgotPasswordClicked: () -> Unit,
                 modifier: Modifier = Modifier){
 
     val loginState by viewModel.loginState.collectAsState()
@@ -264,26 +263,7 @@ fun LoginScreen(viewModel: CustomerViewModel = viewModel(),
                         shape = RoundedCornerShape(16.dp)
                     )
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    //Forgot Password
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Start
-                    ) {
-                        Text(
-                            text = "Forgot password?",
-                            style = TextStyle(
-                                fontSize = forgotPasswordFontSize,
-                                textDecoration = TextDecoration.Underline
-                            ),
-                            fontWeight = FontWeight.Medium,
-                            color = Color.Blue,
-                            modifier = Modifier.clickable { onForgotPasswordClicked() }
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.height(33.dp))
+                    Spacer(modifier = Modifier.height(35.dp))
 
                     //Login Button
                     ElevatedButton(

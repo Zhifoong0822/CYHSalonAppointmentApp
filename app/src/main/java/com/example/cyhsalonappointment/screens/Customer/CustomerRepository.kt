@@ -1,7 +1,5 @@
 package com.example.cyhsalonappointment.screens.Customer
 
-import android.util.Log
-
 class CustomerRepository(private val customerDao: CustomerDAO) {
 
     // SIGNUP
@@ -14,17 +12,14 @@ class CustomerRepository(private val customerDao: CustomerDAO) {
         }
     }
 
-    // LOGIN
     suspend fun loginCustomer(email: String, password: String): CustomerEntity? {
         return customerDao.login(email, password)
     }
 
-    // Get all customers (optional)
     suspend fun getAllCustomers(): List<CustomerEntity> {
         return customerDao.getAllCustomers()
     }
 
-    // Get customer by ID
     suspend fun getCustomerById(id: String): CustomerEntity? {
         return customerDao.getCustomerById(id)
     }
@@ -39,6 +34,10 @@ class CustomerRepository(private val customerDao: CustomerDAO) {
 
     suspend fun isUsernameAvailable(username: String): Boolean {
         return customerDao.getCustomerByUsername(username) == null
+    }
+
+    suspend fun isEmailAvailable(email: String): Boolean {
+        return customerDao.getCustomerByEmail(email) == null
     }
 
     suspend fun loadCustomerProfile(email: String): CustomerEntity? {

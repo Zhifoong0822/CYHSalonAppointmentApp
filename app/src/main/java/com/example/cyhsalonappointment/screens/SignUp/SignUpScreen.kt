@@ -298,34 +298,50 @@ fun SignUpScreen(viewModel: CustomerViewModel = viewModel(),
                     }
 
                     // Contact Number
-                    OutlinedTextField(
-                        value = signUpState.contactNumber,
-                        onValueChange = { viewModel.onSignUpContactChange(it) }, // update ViewModel
-                        label = { Text("Contact Number",
-                            fontWeight = FontWeight.Medium,
-                            color = Color(0xFF7B1FA2)) },
-                        placeholder = {
+                    Column {
+                        OutlinedTextField(
+                            value = signUpState.contactNumber,
+                            onValueChange = { viewModel.onSignUpContactChange(it) },
+                            label = {
+                                Text(
+                                    "Contact Number",
+                                    fontWeight = FontWeight.Medium,
+                                    color = Color(0xFF7B1FA2)
+                                )
+                            },
+                            placeholder = {
+                                Text("Enter your contact number", color = Color(0xFF9CA3AF))
+                            },
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Filled.ContactPhone,
+                                    contentDescription = "Contact Number",
+                                    tint = Color(0xFF7B1FA2)
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(16.dp),
+
+                            isError = !signUpState.contactError.isNullOrEmpty(),
+
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = Color(0xFF7B1FA2),
+                                unfocusedBorderColor = Color(0xFFE1BEE7),
+                                focusedLabelColor = Color(0xFF7B1FA2),
+                                cursorColor = Color(0xFF7B1FA2),
+                                errorBorderColor = Color(0xFFDC2626)
+                            )
+                        )
+
+                        if (!signUpState.contactError.isNullOrEmpty()) {
                             Text(
-                                "Enter your contact number",
-                                color = Color(0xFF9CA3AF)
+                                text = signUpState.contactError!!,
+                                color = Color(0xFFC2185B),
+                                fontSize = 12.sp,
+                                modifier = Modifier.padding(start = 16.dp, top = 4.dp)
                             )
-                        },
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Filled.ContactPhone,
-                                contentDescription = "Contact Number",
-                                tint = Color(0xFF7B1FA2)
-                            )
-                        },
-                        colors = OutlinedTextFieldDefaults.colors(
-                            focusedBorderColor = Color(0xFF7B1FA2),
-                            unfocusedBorderColor = Color(0xFFE1BEE7),
-                            focusedLabelColor = Color(0xFF7B1FA2),
-                            cursorColor = Color(0xFF7B1FA2)
-                        ),
-                        shape = RoundedCornerShape(16.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    )
+                        }
+                    }
 
                     //Email
                     Column {

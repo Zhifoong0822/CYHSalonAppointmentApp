@@ -220,7 +220,6 @@ fun LogoScreen(message: String = "",
                         .size(60.dp)
                         .background(color = Color(0xFF7B1FA2), shape = CircleShape)
                 ) {
-                    // Wrap Icon in a Box with padding to counter internal padding
                     Box(
                         contentAlignment = Alignment.Center,
                         modifier = Modifier.fillMaxSize(0.75f)
