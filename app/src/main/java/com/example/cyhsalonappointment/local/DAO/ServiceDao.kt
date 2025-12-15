@@ -14,7 +14,7 @@ interface ServiceDao {
     @Update
     suspend fun updateService(service: SalonService)
 
-    // Hard delete (not used in UI, but kept if ever needed)
+    // Hard delete
     @Delete
     suspend fun deleteService(service: SalonService)
 
