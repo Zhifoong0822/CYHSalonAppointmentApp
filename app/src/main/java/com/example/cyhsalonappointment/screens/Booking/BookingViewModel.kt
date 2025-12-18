@@ -11,6 +11,7 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.example.cyhsalonappointment.AppointmentReminderReceiver
+import com.example.cyhsalonappointment.AppointmentReminderWorker
 import com.example.cyhsalonappointment.local.DAO.AppointmentDao
 import com.example.cyhsalonappointment.local.DAO.TimeSlotDao
 import com.example.cyhsalonappointment.local.entity.Appointment
@@ -69,25 +70,24 @@ class BookingViewModel(
     @RequiresApi(Build.VERSION_CODES.O)
     fun scheduleNotification(context: Context, dateTime: LocalDateTime, appointmentId: String) {
         val reminderTime = dateTime.minusHours(1)
+        val delayMillis = Duration.between(
+            LocalDateTime.now(),
+            reminderTime
+        ).toMillis()
 
-        val intent = Intent(context, AppointmentReminderReceiver::class.java).apply {
-            putExtra("message", "Your appointment is in 1 hour.")
-            putExtra("appointmentId", appointmentId)
-        }
+        if (delayMillis <= 0) return
 
-        val pendingIntent = PendingIntent.getBroadcast(
-            context,
-            appointmentId.hashCode(),
-            intent,
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+        val workRequest = OneTimeWorkRequestBuilder<AppointmentReminderWorker>()
+            .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
+            .setInputData(
+                workDataOf(
+                    "message" to "Your appointment is in 1 hour.",
+                    "appointmentId" to appointmentId
+                )
+            )
+            .build()
 
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
-        alarmManager.setExactAndAllowWhileIdle(
-            android.app.AlarmManager.RTC_WAKEUP,
-            reminderTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(),
-            pendingIntent
-        )
+        WorkManager.getInstance(context).enqueue(workRequest)
     }
 
 
