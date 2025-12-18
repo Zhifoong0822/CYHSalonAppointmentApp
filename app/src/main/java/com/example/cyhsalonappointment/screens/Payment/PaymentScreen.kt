@@ -30,6 +30,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -278,6 +279,15 @@ fun PaymentScreen(
                                     serviceId = serviceId,
                                     stylistId = stylistId
                                 )
+
+                            val appointmentDateTime = LocalDateTime.of(
+                                LocalDate.parse(bookingDate),
+                                extractTimeFromTimeSlotString(bookingTime).let { time ->
+                                    val parts = time.split(":")
+                                    java.time.LocalTime.of(parts[0].toInt(), parts[1].toInt())
+                                }
+                            )
+                            bookingViewModel.scheduleNotification(context, appointmentDateTime, realAppointmentId)
 
                             val encodedServiceName = Uri.encode(serviceName)
                             val encodedDate = Uri.encode(bookingDate)

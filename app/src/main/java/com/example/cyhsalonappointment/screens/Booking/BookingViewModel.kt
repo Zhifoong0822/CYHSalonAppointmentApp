@@ -1,6 +1,8 @@
 package com.example.cyhsalonappointment.screens.Booking
 
+import android.app.PendingIntent
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
@@ -8,10 +10,11 @@ import androidx.lifecycle.viewModelScope
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.example.cyhsalonappointment.AppointmentReminderWorker
+import com.example.cyhsalonappointment.AppointmentReminderReceiver
 import com.example.cyhsalonappointment.local.DAO.AppointmentDao
 import com.example.cyhsalonappointment.local.DAO.TimeSlotDao
 import com.example.cyhsalonappointment.local.entity.Appointment
+import com.example.cyhsalonappointment.screens.BookingHistory.getStartTimeFromSlot
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
@@ -35,32 +38,6 @@ class BookingViewModel(
         return "APP" + String.format("%04d", count + 1)
     }
 
-    // ---------- EXISTING FUNCTION (DO NOT BREAK OTHERS) ----------
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun createAppointment(
-        date: String,
-        timeSlotId: String,
-        customerId: String?,
-        serviceId: Int,
-        stylistId: String?
-    ) {
-        viewModelScope.launch {
-            val newId = generateAppointmentId()
-            val normalizedDate = LocalDate.parse(date).toString()
-
-            val appointment = Appointment(
-                appointmentId = newId,
-                appointmentDate = normalizedDate,
-                timeSlotId = timeSlotId,
-                customerId = customerId,
-                serviceId = serviceId,
-                stylistId = stylistId
-            )
-
-            appointmentDao.insertAppointment(appointment)
-            _saveResult.value = true
-        }
-    }
 
     // ---------- NEW FUNCTION (USED BY PAYMENT) ----------
     @RequiresApi(Build.VERSION_CODES.O)
@@ -90,20 +67,29 @@ class BookingViewModel(
 
     // ---------- NOTIFICATION (UNCHANGED) ----------
     @RequiresApi(Build.VERSION_CODES.O)
-    fun scheduleNotification(context: Context, dateTime: LocalDateTime) {
+    fun scheduleNotification(context: Context, dateTime: LocalDateTime, appointmentId: String) {
         val reminderTime = dateTime.minusHours(1)
-        val delay = Duration.between(LocalDateTime.now(), reminderTime).toMillis()
-        if (delay <= 0) return
 
-        val data = workDataOf("message" to "Your appointment is in 1 hour.")
+        val intent = Intent(context, AppointmentReminderReceiver::class.java).apply {
+            putExtra("message", "Your appointment is in 1 hour.")
+            putExtra("appointmentId", appointmentId)
+        }
 
-        val request = OneTimeWorkRequestBuilder<AppointmentReminderWorker>()
-            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
-            .setInputData(data)
-            .build()
+        val pendingIntent = PendingIntent.getBroadcast(
+            context,
+            appointmentId.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
 
-        WorkManager.getInstance(context).enqueue(request)
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as android.app.AlarmManager
+        alarmManager.setExactAndAllowWhileIdle(
+            android.app.AlarmManager.RTC_WAKEUP,
+            reminderTime.atZone(java.time.ZoneId.systemDefault()).toInstant().toEpochMilli(),
+            pendingIntent
+        )
     }
+
 
     // ---------- CATEGORY MAPPING ----------
     fun getCategoryIdByServiceName(serviceName: String): Int {

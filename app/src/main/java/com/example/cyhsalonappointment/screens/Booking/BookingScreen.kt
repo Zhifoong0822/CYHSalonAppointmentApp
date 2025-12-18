@@ -172,9 +172,9 @@ fun TimeSlotDropdown(
                 if (selectedDate != today) {
                     true
                 } else {
-                    val now = LocalTime.now()
+                    val nowPlus30 = LocalTime.now().plusMinutes(30)
                     val slotTime = LocalTime.parse(slot.timeSlot)
-                    slotTime.isAfter(now)
+                    slotTime.isAfter(nowPlus30)
                 }
             }
         }

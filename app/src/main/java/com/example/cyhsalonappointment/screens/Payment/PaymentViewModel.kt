@@ -29,11 +29,9 @@ class PaymentViewModel(
      val appointment: Appointment
     )
 
-    fun loadPayments() {
+    fun loadPayments(customerId: String) {
         viewModelScope.launch {
-            paymentDao.getAllPayments().collect { paymentList ->
-                _payments.value = paymentList
-            }
+            _payments.value = paymentDao.getPaymentsForCustomer(customerId)
         }
     }
 

@@ -36,6 +36,15 @@ interface PaymentDao {
         WHERE status = 'Successful'
     """)
     suspend fun getTotalRevenue(): Double
+    @Query("""
+    SELECT Payment.*
+    FROM Payment
+    INNER JOIN Appointment
+        ON Payment.appointmentId = Appointment.appointmentId
+    WHERE Appointment.customerId = :customerId
+    ORDER BY Payment.paymentDate DESC
+""")
+    suspend fun getPaymentsForCustomer(customerId: String): List<Payment>
 
 
 }

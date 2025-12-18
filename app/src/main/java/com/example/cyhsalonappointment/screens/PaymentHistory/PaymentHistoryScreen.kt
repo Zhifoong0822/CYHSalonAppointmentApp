@@ -24,7 +24,8 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PaymentHistoryScreen(
-    navController: NavHostController
+    navController: NavHostController,
+    customerId: String
 ) {
     val paymentDao = App.db.paymentDao()
     val appointmentDao = App.db.appointmentDao()
@@ -40,7 +41,7 @@ fun PaymentHistoryScreen(
     val coroutineScope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        viewModel.loadPayments()
+        viewModel.loadPayments(customerId)
     }
 
     // When payments load, get service names

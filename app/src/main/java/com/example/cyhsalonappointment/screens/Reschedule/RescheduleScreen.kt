@@ -13,11 +13,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import com.example.cyhsalonappointment.App
 import com.example.cyhsalonappointment.local.entity.TimeSlot
 import com.example.cyhsalonappointmentscreens.BookingScreen.DatePickerField
 import com.example.cyhsalonappointmentscreens.BookingScreen.TimeSlotDropdown
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -28,27 +30,35 @@ fun RescheduleScreen(
     appointmentId: String,
     serviceName: String,
     oldDate: String,
-    oldTime: String      // This is the old timeSlotId such as "TS05"
+    oldTime: String,
+    parentBookingHistoryEntry: NavBackStackEntry
 ) {
     val timeSlotDao = App.db.timeSlotDao()
     val appointmentDao = App.db.appointmentDao()
 
+
     val viewModel: RescheduleViewModel = viewModel(
+        viewModelStoreOwner = remember(parentBookingHistoryEntry) { parentBookingHistoryEntry },
         factory = RescheduleViewModelFactory(timeSlotDao, appointmentDao)
     )
 
-    // Collect TimeSlot objects from DB
     val availableTimeSlots by viewModel.timeSlots.collectAsState()
 
-    // Default selection = current date
     var selectedDate by remember { mutableStateOf(LocalDate.parse(oldDate)) }
-
-    // Find the old TimeSlot object
     var selectedTimeSlot by remember {
-        mutableStateOf(
-            availableTimeSlots.find { it.timeSlotId == oldTime }
-        )
+        mutableStateOf(availableTimeSlots.find { it.timeSlotId == oldTime })
     }
+
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(appointmentId) {
+        if (viewModel.isAlreadyRescheduled(appointmentId)) {
+            snackbarHostState.showSnackbar(
+                message = "This appointment has already been rescheduled."
+            )
+            navController.popBackStack()
+        }
+    }
+
 
     Scaffold(
         topBar = {
@@ -60,7 +70,8 @@ fun RescheduleScreen(
                     }
                 }
             )
-        }
+        },
+        snackbarHost = { SnackbarHost(snackbarHostState) }
     ) { padding ->
         Column(
             modifier = Modifier
@@ -69,8 +80,7 @@ fun RescheduleScreen(
                 .fillMaxSize(),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-
-            // --- Current Booking Card ---
+            // Current Booking
             Card(
                 shape = RoundedCornerShape(12.dp),
                 colors = CardDefaults.cardColors(containerColor = Color(0xFFF0F0F0)),
@@ -84,10 +94,7 @@ fun RescheduleScreen(
                     Text("Service: $serviceName", fontSize = 20.sp)
                     Text("Date: $oldDate", fontSize = 16.sp)
                     Text(
-                        "Time: ${
-                            availableTimeSlots.find { it.timeSlotId == oldTime }?.timeSlot
-                                ?: "Unknown"
-                        }",
+                        "Time: ${availableTimeSlots.find { it.timeSlotId == oldTime }?.timeSlot ?: "Unknown"}",
                         fontSize = 16.sp
                     )
                 }
@@ -95,14 +102,14 @@ fun RescheduleScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // --- New Date Picker ---
+            // New Date Picker
             Text("Select New Date", fontSize = 18.sp)
             DatePickerField(
                 selectedDate = selectedDate,
                 onDateSelected = { selectedDate = it }
             )
 
-            // --- New Time Slot ---
+            // New Time Slot
             Text("Select New Time Slot", fontSize = 18.sp)
             TimeSlotDropdown(
                 timeSlots = availableTimeSlots,
@@ -112,17 +119,28 @@ fun RescheduleScreen(
             )
 
             Spacer(modifier = Modifier.height(24.dp))
+            val coroutineScope = rememberCoroutineScope()
 
+            // Confirm Button
             Button(
                 onClick = {
                     if (selectedTimeSlot != null) {
                         viewModel.updateAppointment(
                             appointmentId = appointmentId,
                             newDate = selectedDate.toString(),
-                            newTimeSlotId = selectedTimeSlot!!.timeSlotId   // Store ID
+                            newTimeSlotId = selectedTimeSlot!!.timeSlotId,
+                            oldDate = oldDate,
+                            oldTimeSlotId = oldTime,
+                            onError = { message ->
+                                coroutineScope.launch {
+                                    snackbarHostState.showSnackbar(message)
+                                }
+                            },
+                            onSuccess = {
+                                navController.popBackStack()
+                            }
                         )
                     }
-                    navController.popBackStack()
                 },
                 enabled = selectedTimeSlot != null,
                 modifier = Modifier.fillMaxWidth()

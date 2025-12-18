@@ -398,12 +398,19 @@ class MainActivity : ComponentActivity() {
                     val oldDate = backStackEntry.arguments?.getString("date") ?: ""
                     val oldTime = backStackEntry.arguments?.getString("timeSlotId") ?: ""
 
+                    val parentBookingHistoryEntry = remember(backStackEntry) {
+                        navController.getBackStackEntry(
+                            "bookingHistory?isAdmin={isAdmin}&status={status}"
+                        )
+                    }
+
                     RescheduleScreen(
                         navController = navController,
                         appointmentId = appointmentId,
                         serviceName = serviceName,
                         oldDate = oldDate,
-                        oldTime = oldTime
+                        oldTime = oldTime,
+                        parentBookingHistoryEntry = parentBookingHistoryEntry
                     )
                 }
                 composable(
@@ -511,9 +518,14 @@ class MainActivity : ComponentActivity() {
                 }
 
 // Payment History
-                composable("paymentHistory") {
-                    PaymentHistoryScreen(navController = navController)
+                composable("paymentHistory/{customerId}") {
+                    val customerId = it.arguments?.getString("customerId") ?: ""
+                    PaymentHistoryScreen(
+                        navController = navController,
+                        customerId = customerId
+                    )
                 }
+
                 composable("accountSelection") {
                         AccountSelectionScreen(navController)
                     }

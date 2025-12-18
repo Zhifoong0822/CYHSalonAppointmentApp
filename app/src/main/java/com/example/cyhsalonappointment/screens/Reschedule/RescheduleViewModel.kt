@@ -14,6 +14,8 @@ class RescheduleViewModel(
     private val appointmentDao: AppointmentDao
 ) : ViewModel() {
 
+    private val rescheduledAppointments = mutableSetOf<String>()
+
     // Load all time slots as List<String>
     val timeSlots = timeSlotDao.getAllTimeSlotsFlow()
         .stateIn(
@@ -22,18 +24,41 @@ class RescheduleViewModel(
             initialValue = emptyList()
         )
 
+    fun isAlreadyRescheduled(appointmentId: String) = rescheduledAppointments.contains(appointmentId)
+
     // Update appointment date + timeslot
     fun updateAppointment(
         appointmentId: String,
         newDate: String,
-        newTimeSlotId: String
-    ) {
+        newTimeSlotId: String,
+        oldDate: String,
+        oldTimeSlotId: String,
+        onError: (String) -> Unit = {},
+        onSuccess: () -> Unit = {}
+    ){
         viewModelScope.launch {
+
+            if (newDate == oldDate && newTimeSlotId == oldTimeSlotId) {
+                onError("Please select a different date or time slot.")
+                return@launch
+            }
+
+            if (rescheduledAppointments.contains(appointmentId)) {
+                onError("You can only reschedule once per session.")
+                return@launch
+            }
+
+            // Update the appointment
             appointmentDao.updateAppointment(
                 appointmentId = appointmentId,
                 newDate = newDate,
                 newTimeSlotId = newTimeSlotId
             )
+
+            // Mark as rescheduled in memory
+            rescheduledAppointments.add(appointmentId)
+
+            onSuccess()
         }
     }
 }

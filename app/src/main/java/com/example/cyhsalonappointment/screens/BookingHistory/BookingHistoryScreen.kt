@@ -34,7 +34,9 @@ data class AppointmentDisplay(
     val status: String,
     val stylistName: String? = null,
     val hairLength: String? = null,
-    val price: Double? = null
+    val price: Double? = null,
+    val rescheduleCount: Int = 0
+
 )
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -125,6 +127,8 @@ fun HistoryCard(
     var showConfirmDialog by remember { mutableStateOf(false) }
     var showInfoDialog by remember { mutableStateOf(false) }
 
+    val allowReschedule = appointment.rescheduleCount < 1
+
     Card(
         shape = RoundedCornerShape(12.dp),
         modifier = Modifier
@@ -172,7 +176,12 @@ fun HistoryCard(
                         Text("Cancel", color = if (allowCancel) MaterialTheme.colorScheme.primary else Color.Gray)
                     }
                     Spacer(modifier = Modifier.width(6.dp))
-                    Button(onClick = { onRescheduleClick(appointment) }) { Text("Reschedule") }
+                    Button(
+                        onClick = { onRescheduleClick(appointment) },
+                        enabled = allowReschedule
+                    ) {
+                        Text("Reschedule")
+                    }
                 }
             }
         }
