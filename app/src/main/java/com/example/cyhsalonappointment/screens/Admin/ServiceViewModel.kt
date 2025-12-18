@@ -4,8 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.cyhsalonappointment.data.ServiceRepository
 import com.example.cyhsalonappointment.local.entity.SalonService
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 
 class ServiceViewModel(
@@ -13,21 +12,33 @@ class ServiceViewModel(
 ) : ViewModel() {
 
     // Active services
-    val services = repository.getAllServices().stateIn(
-        viewModelScope,
-        SharingStarted.WhileSubscribed(),
-        emptyList()
-    )
+    val services = repository.getAllServices()
+        .stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(),
+            emptyList()
+        )
+
+    // Error message for UI feedback (Toast / Snackbar)
+    private val _errorMessage = MutableStateFlow<String?>(null)
+    val errorMessage: StateFlow<String?> = _errorMessage
 
     // --------- CREATE SERVICES ---------
 
-    // Single price (e.g. haircut, touch up)
+    // Single price services (e.g. haircut, touch up)
     fun addSinglePriceService(
         categoryId: Int,
         name: String,
         price: String
     ) {
         viewModelScope.launch {
+
+            // 🔒 DUPLICATE CHECK
+            if (repository.serviceExists(name, categoryId)) {
+                _errorMessage.value = "Service already exists"
+                return@launch
+            }
+
             repository.addService(
                 SalonService(
                     categoryId = categoryId,
@@ -42,7 +53,7 @@ class ServiceViewModel(
         }
     }
 
-    // Length-based price (e.g. colour, perm)
+    // Length-based price services (e.g. colour, perm)
     fun addLengthPriceService(
         categoryId: Int,
         name: String,
@@ -51,6 +62,13 @@ class ServiceViewModel(
         long: String
     ) {
         viewModelScope.launch {
+
+            // 🔒 DUPLICATE CHECK
+            if (repository.serviceExists(name, categoryId)) {
+                _errorMessage.value = "Service already exists"
+                return@launch
+            }
+
             repository.addService(
                 SalonService(
                     categoryId = categoryId,
@@ -89,5 +107,10 @@ class ServiceViewModel(
             4 -> "Hair Perm"
             else -> "Unknown"
         }
+    }
+
+    // Call this after showing error to clear state
+    fun clearError() {
+        _errorMessage.value = null
     }
 }

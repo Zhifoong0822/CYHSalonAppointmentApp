@@ -32,4 +32,11 @@ class ServiceRepository(
 
     fun getServiceByName(name: String): Flow<SalonService?> =
         dao.getServiceByName(name)
+
+    suspend fun serviceExists(
+        name: String,
+        categoryId: Int
+    ): Boolean {
+        return dao.serviceExists(name, categoryId) > 0
+    }
 }

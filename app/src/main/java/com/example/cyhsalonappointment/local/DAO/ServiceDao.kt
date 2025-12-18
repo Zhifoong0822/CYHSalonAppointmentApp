@@ -42,4 +42,17 @@ interface ServiceDao {
     @Query("SELECT serviceId FROM services WHERE serviceName = :name LIMIT 1")
     suspend fun getServiceIdByName(name: String): Int?
 
+
+    @Query("""
+    SELECT COUNT(*) 
+    FROM services 
+    WHERE serviceName = :name 
+      AND categoryId = :categoryId 
+      AND isActive = 1
+""")
+    suspend fun serviceExists(
+        name: String,
+        categoryId: Int
+    ): Int
+
 }
