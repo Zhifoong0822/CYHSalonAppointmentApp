@@ -10,6 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.cyhsalonappointment.local.DAO.ServiceSalesReport
 
 @Composable
 fun ReportLayout(
@@ -39,6 +40,26 @@ fun ReportLayout(
         }
 
         Spacer(Modifier.height(18.dp))
+
+        if (services.isNotEmpty()) {
+            Text("Service Contribution", fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(12.dp))
+
+            ServiceSalesPieChart(
+                data = services
+                    .groupBy { it.serviceName }
+                    .map {
+                        ServiceSalesReport(
+                            serviceName = it.key,
+                            date = "",
+                            total = it.value.sumOf { s -> s.total }
+                        )
+                    }
+            )
+
+            Spacer(Modifier.height(20.dp))
+        }
+
 
         Text("Services Sales History", fontWeight = FontWeight.Bold)
         Divider()

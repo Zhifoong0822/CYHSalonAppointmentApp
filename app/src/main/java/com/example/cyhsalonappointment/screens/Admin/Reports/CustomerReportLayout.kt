@@ -27,6 +27,16 @@ fun CustomerReportLayout(
         Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
         Spacer(Modifier.height(20.dp))
 
+
+        if (customers.isNotEmpty()) {
+            Text("Top 5 Customers", fontWeight = FontWeight.Bold)
+            Spacer(Modifier.height(12.dp))
+
+            TopCustomerBarChart(customers)
+
+            Spacer(Modifier.height(20.dp))
+        }
+
         customers.forEach {
             Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
                 Text("Customer: ${it.customerId}")
