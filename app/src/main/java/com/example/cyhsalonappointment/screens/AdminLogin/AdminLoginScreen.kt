@@ -223,6 +223,26 @@ fun AdminLoginScreen(
                             fontWeight = FontWeight.Bold
                         )
                     }
+
+                    loginState.errorMessage?.let { errorMessage ->
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(
+                                containerColor = Color(0xFFFCE4EC)
+                            )
+                        ) {
+                            Text(
+                                text = errorMessage,
+                                color = Color(0xFFC2185B),
+                                fontWeight = FontWeight.Medium,
+                                fontSize = 14.sp,
+                                modifier = Modifier.padding(12.dp),
+                                textAlign = TextAlign.Center
+                            )
+                        }
+                    }
                 }
             }
 

@@ -15,11 +15,17 @@ class AdminViewModel(private val repo: AdminRepository) : ViewModel() {
     val currentAdmin: StateFlow<AdminEntity?> = _currentAdmin
 
     fun onAdminIdChange(newValue: String) {
-        _loginState.value = _loginState.value.copy(adminId = newValue)
+        _loginState.value = _loginState.value.copy(
+            adminId = newValue,
+            errorMessage = null
+        )
     }
 
     fun onPasswordChange(newValue: String) {
-        _loginState.value = _loginState.value.copy(password = newValue)
+        _loginState.value = _loginState.value.copy(
+            password = newValue,
+            errorMessage = null
+        )
     }
 
     fun login() {
@@ -61,6 +67,6 @@ class AdminViewModel(private val repo: AdminRepository) : ViewModel() {
 
     fun logout() {
         _currentAdmin.value = null
-        _loginState.value = AdminLoginState()   // resets everything
+        _loginState.value = AdminLoginState()
     }
 }

@@ -322,7 +322,7 @@ class CustomerViewModel(private val repository: CustomerRepository,
             errorMessage = null
         )
 
-        if (username.length >= 2) {
+        if (usernameError == null && username.length >= 2) {
             usernameCheckJob?.cancel()
             usernameCheckJob = viewModelScope.launch {
                 delay(500)
@@ -352,7 +352,8 @@ class CustomerViewModel(private val repository: CustomerRepository,
                 _signUpState.value = _signUpState.value.copy(
                     isCheckingUsername = false,
                     isUsernameAvailable = available,
-                    usernameError = if (!available) "Username already taken" else null
+                    usernameError = if (!available) "Username already taken"
+                    else _signUpState.value.usernameError
                 )
             } catch (e: Exception) {
                 _signUpState.value = _signUpState.value.copy(
