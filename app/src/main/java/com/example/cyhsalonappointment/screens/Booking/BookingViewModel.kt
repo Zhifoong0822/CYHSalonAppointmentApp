@@ -7,10 +7,10 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import androidx.work.ExistingWorkPolicy
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.example.cyhsalonappointment.AppointmentReminderReceiver
 import com.example.cyhsalonappointment.AppointmentReminderWorker
 import com.example.cyhsalonappointment.local.DAO.AppointmentDao
 import com.example.cyhsalonappointment.local.DAO.TimeSlotDao
@@ -68,14 +68,20 @@ class BookingViewModel(
 
     // ---------- NOTIFICATION (UNCHANGED) ----------
     @RequiresApi(Build.VERSION_CODES.O)
-    fun scheduleNotification(context: Context, dateTime: LocalDateTime, appointmentId: String) {
-        val reminderTime = dateTime.minusHours(1)
-        val delayMillis = Duration.between(
-            LocalDateTime.now(),
-            reminderTime
-        ).toMillis()
+    fun scheduleNotification(
+        context: Context,
+        appointmentDateTime: LocalDateTime,
+        appointmentId: String
+    ) {
+        val reminderTime = appointmentDateTime.minusHours(1)
+        val now = LocalDateTime.now()
 
-        if (delayMillis <= 0) return
+        if (reminderTime.isBefore(now)) {
+            // Too late to schedule reminder
+            return
+        }
+
+        val delayMillis = Duration.between(now, reminderTime).toMillis()
 
         val workRequest = OneTimeWorkRequestBuilder<AppointmentReminderWorker>()
             .setInitialDelay(delayMillis, TimeUnit.MILLISECONDS)
@@ -87,8 +93,13 @@ class BookingViewModel(
             )
             .build()
 
-        WorkManager.getInstance(context).enqueue(workRequest)
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            "appointment_reminder_$appointmentId",
+            ExistingWorkPolicy.REPLACE,
+            workRequest
+        )
     }
+
 
 
     // ---------- CATEGORY MAPPING ----------
