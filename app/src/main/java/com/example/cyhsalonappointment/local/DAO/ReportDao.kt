@@ -21,13 +21,17 @@ interface ReportDAO {
     // COUNT completed APPOINTMENTS
     // Completed means: NOT cancelled AND has a payment record
     @Query("""
-        SELECT COUNT(*) 
-        FROM Appointment JOIN Payment P
-        WHERE date(appointmentDate) BETWEEN :start AND :end
-          AND isCancelled = 0
-          AND P.status = 'Successful'
-    """)
-    suspend fun getTotalCompletedAppointments(start: String, end: String): Int
+    SELECT COUNT(DISTINCT A.appointmentId)
+    FROM Appointment A
+    JOIN Payment P ON P.appointmentId = A.appointmentId
+    WHERE substr(A.appointmentDate, 1, 10) BETWEEN :start AND :end
+      AND A.isCancelled = 0
+      AND P.status = 'Successful'
+""")
+    suspend fun getTotalCompletedAppointments(
+        start: String,
+        end: String
+    ): Int
 
     //get top customer spent
     @Query("""
