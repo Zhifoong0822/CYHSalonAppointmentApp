@@ -3,6 +3,8 @@ package com.example.cyhsalonappointment
 import android.app.Application
 import androidx.room.Room
 import com.example.cyhsalonappointment.local.AppDatabase
+import com.example.cyhsalonappointment.local.entity.Appointment
+import com.example.cyhsalonappointment.local.entity.Payment
 import com.example.cyhsalonappointment.local.entity.Stylist
 import com.example.cyhsalonappointment.local.entity.TimeSlot
 import com.example.cyhsalonappointment.screens.Admin.AdminEntity
@@ -36,6 +38,13 @@ class App : Application() {
                 dao.insertTimeSlots(generateDefaultTimeSlots())
             }
             preloadStylists()
+
+            //DEMO DATA FOR PRESENTATION
+            preloadDemoAppointmentsAndPayments()
+
+
+
+
         }
 
     }
@@ -93,4 +102,98 @@ class App : Application() {
         }
     }
 
+    private suspend fun preloadDemoAppointmentsAndPayments() {
+        val appointmentDao = db.appointmentDao()
+        val paymentDao = db.paymentDao()
+
+        // Prevent duplicates
+        if (appointmentDao.countAppointments() > 0) return
+
+        val demoAppointments = listOf(
+            // ---------- MONTHLY (NOV 2025) ----------
+            Appointment(
+                appointmentId = "DEMO_M01",
+                appointmentDate = "2025-11-05",
+                timeSlotId = "TS0003",
+                customerId = "C0001",
+                serviceId = 1,
+                stylistId = "ST01",
+                finalPrice = 80.0,
+                serviceName = "Student Hair Wash",
+                customerName = "Demo User",
+                hairLength = "Short"
+            ),
+            Appointment(
+                appointmentId = "DEMO_M02",
+                appointmentDate = "2025-11-18",
+                timeSlotId = "TS0006",
+                customerId = "C0002",
+                serviceId = 1,
+                stylistId = "ST02",
+                finalPrice = 80.0,
+                serviceName = "Student Hair Cut",
+                customerName = "Demo User",
+                hairLength = "Medium"
+            ),
+
+            // ---------- WEEKLY (DEC 16–22) ----------
+            Appointment(
+                appointmentId = "DEMO_W01",
+                appointmentDate = "2025-12-16",
+                timeSlotId = "TS0004",
+                customerId = "C0003",
+                serviceId = 1,
+                stylistId = "ST01",
+                finalPrice = 80.0,
+                serviceName = "Student Hair Cut",
+                customerName = "Demo User",
+                hairLength = "Short"
+            ),
+            Appointment(
+                appointmentId = "DEMO_W02",
+                appointmentDate = "2025-12-20",
+                timeSlotId = "TS0007",
+                customerId = "C0004",
+                serviceId = 1,
+                stylistId = "ST03",
+                finalPrice = 80.0,
+                serviceName = "Student Hair Wash",
+                customerName = "Demo User",
+                hairLength = "Long"
+            ),
+
+            // ---------- DAILY (DEC 22) ----------
+            Appointment(
+                appointmentId = "DEMO_D01",
+                appointmentDate = "2025-12-22",
+                timeSlotId = "TS0005",
+                customerId = "C0005",
+                serviceId = 1,
+                stylistId = "ST02",
+                finalPrice = 80.0,
+                serviceName = "Student Hair Cut",
+                customerName = "Demo User",
+                hairLength = "Medium"
+            )
+        )
+
+        demoAppointments.forEach { appointment ->
+            appointmentDao.insertAppointment(appointment)
+
+            paymentDao.insertPayment(
+                Payment(
+                    paymentId = "PAY_${appointment.appointmentId}",
+                    appointmentId = appointment.appointmentId,
+                    purchaseAmount = 80.0,
+                    bookingFee = 10.0,
+                    taxAmount = 5.4,
+                    totalAmount = 95.4,
+                    paymentMethod = "Credit/Debit",
+                    paymentDate = appointment.appointmentDate,
+                    paymentTime = "14:00",
+                    status = "Successful"
+                )
+            )
+        }
+    }
 }

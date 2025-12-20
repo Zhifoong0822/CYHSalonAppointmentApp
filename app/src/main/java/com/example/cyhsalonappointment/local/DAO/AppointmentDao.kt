@@ -65,6 +65,9 @@ interface AppointmentDao {
     @Query("SELECT * FROM appointment WHERE customerId = :customerId")
     suspend fun getAppointmentsForUser(customerId: String): List<Appointment>
 
+    @Query("SELECT COUNT(*) FROM Appointment")
+    suspend fun countAppointments(): Int
+
 
 
 }
