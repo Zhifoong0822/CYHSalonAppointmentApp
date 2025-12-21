@@ -1,10 +1,18 @@
 package com.example.cyhsalonappointment.local.entity
 import androidx.room.Entity
+import androidx.room.Index
 import androidx.room.PrimaryKey
 
 
-@Entity(tableName = "Appointment")
-data class Appointment(
+@Entity(
+    tableName = "Appointment",
+    indices = [
+        Index(
+            value = ["appointmentDate", "timeSlotId", "stylistId"],
+            unique = true
+        )
+    ]
+)data class Appointment(
     @PrimaryKey
     val appointmentId: String,   // e.g., "APP0001"
     val appointmentDate: String, // e.g., "2025-11-26"

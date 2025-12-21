@@ -19,6 +19,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -47,7 +48,15 @@ fun StylistSelectionScreen(
     val encodedServiceName = URLEncoder.encode(serviceNameFromDb, StandardCharsets.UTF_8.toString())
 
     // load stylists
+    LaunchedEffect(selectedDate, selectedTimeSlot) {
+        stylistVM.loadAvailableStylists(
+            date = selectedDate,
+            timeSlotId = selectedTimeSlot
+        )
+    }
+
     val stylists by stylistVM.stylists.collectAsState()
+
 
     var selectedHairLength by remember { mutableStateOf<String?>(null) }
     var selectedStylistId by remember { mutableStateOf<String?>(null) }

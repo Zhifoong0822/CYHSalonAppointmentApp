@@ -48,4 +48,12 @@ class StylistSelectionViewModel(
         return basePrice * multiplier
     }
 
+    fun loadAvailableStylists(date: String, timeSlotId: String) {
+        viewModelScope.launch {
+            _stylists.value =
+                stylistDao.getAvailableStylists(date, timeSlotId)
+        }
+    }
+
+
 }
